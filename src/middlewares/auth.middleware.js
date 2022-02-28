@@ -1,5 +1,5 @@
-const passport = require('passport');
-const JwtStrategy = require('passport-jwt').Strategy;
+const passport = require("passport");
+const JwtStrategy = require("passport-jwt").Strategy;
 const User = require("mongoose").model("User");
 const { JWT_KEY } = require("../config/config");
 
