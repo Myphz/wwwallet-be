@@ -1,7 +1,7 @@
 const express = require("express");
 const User = require("../models/user");
-const issueJWT = require("../helper/issueJWT.helper");
-const authMiddleware = require("../middleware/auth.middleware");
+const issueJWT = require("../helpers/issueJWT.helper");
+const authMiddleware = require("../middlewares/auth.middleware");
 const { COOKIE_OPTS } = require("../config/config");
 const { CREDENTIALS_ERROR, EMAIL_ERROR } = require("../config/errors");
 const router = express.Router();
