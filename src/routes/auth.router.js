@@ -3,12 +3,12 @@ const User = require("../models/user");
 const issueJWT = require("../helpers/issueJWT.helper");
 const authMiddleware = require("../middlewares/auth.middleware");
 const { COOKIE_OPTS } = require("../config/config");
-const validateCredentials = require("../helpers/credentialsValidate.helper");
+const validateParams = require("../middlewares/validateParams.middleware");
 const { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } = require("../config/errors");
 const router = express.Router();
 
 // Register endpoint
-router.post("/register", validateCredentials, (req, res, next) => {
+router.post("/register", validateParams, (req, res, next) => {
 	const { email, password } = req.body;
   // Create new user and try to save it
 	const user = new User({ email, password });
@@ -26,7 +26,7 @@ router.post("/register", validateCredentials, (req, res, next) => {
 });
 
 // Login endpoint
-router.post("/login", validateCredentials, (req, res, next) => {
+router.post("/login", validateParams, (req, res, next) => {
   // If any field is missing, return error
 	const { email, password } = req.body;
 	User.checkLogin(email, password)
