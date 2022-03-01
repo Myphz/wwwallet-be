@@ -3,13 +3,12 @@ const User = require("../models/user");
 const issueJWT = require("../helpers/issueJWT.helper");
 const authMiddleware = require("../middlewares/auth.middleware");
 const { COOKIE_OPTS } = require("../config/config");
-const { CREDENTIALS_ERROR, EMAIL_ERROR } = require("../config/errors");
+const validateCredentials = require("../helpers/credentialsValidate.helper");
+const { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } = require("../config/errors");
 const router = express.Router();
 
 // Register endpoint
-router.post("/register", (req, res, next) => {
-  // If any field is missing, return error
-	if (!req.body || !req.body.email || !req.body.password) return next(CREDENTIALS_ERROR);
+router.post("/register", validateCredentials, (req, res, next) => {
 	const { email, password } = req.body;
   // Create new user and try to save it
 	const user = new User({ email, password });
@@ -18,7 +17,7 @@ router.post("/register", (req, res, next) => {
 		if (err) {
       // Set empty jwt token as cookie
 			res.cookie("jwt", "", COOKIE_OPTS);
-			return next(EMAIL_ERROR);
+			return next(EMAIL_REGISTERED_ERROR);
 		}
     // Set jwt token and return 200
 		res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
@@ -27,9 +26,8 @@ router.post("/register", (req, res, next) => {
 });
 
 // Login endpoint
-router.post("/login", (req, res, next) => {
+router.post("/login", validateCredentials, (req, res, next) => {
   // If any field is missing, return error
-	if (!req.body || !req.body.email || !req.body.password) return next(CREDENTIALS_ERROR);
 	const { email, password } = req.body;
 	User.checkLogin(email, password)
     // If the email has been found, check if the password match with the login parameter
@@ -47,14 +45,14 @@ router.post("/login", (req, res, next) => {
 		});
 });
 
-// Verify a user (already using the middleware, so just return 200)
-router.get("/verify", authMiddleware, (req, res) => {
+// Logout the user (replace the jwt cookie and return 200)
+router.delete("/login", (req, res) => {
+	res.cookie("jwt", "", COOKIE_OPTS);
 	res.sendStatus(200);
 });
 
-// Logout the user (replace the jwt cookie and return 200)
-router.get("/logout", (req, res) => {
-	res.cookie("jwt", "", COOKIE_OPTS);
+// Verify a user (already using the middleware, so just return 200)
+router.post("/verify", authMiddleware, (req, res) => {
 	res.sendStatus(200);
 });
 
