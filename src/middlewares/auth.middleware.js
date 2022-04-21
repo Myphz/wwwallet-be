@@ -1,7 +1,7 @@
-const passport = require("passport");
-const JwtStrategy = require("passport-jwt").Strategy;
-const User = require("mongoose").model("User");
-const { JWT_KEY } = require("../config/config");
+import passport from "passport";
+import { Strategy } from "passport-jwt";
+import User from "../models/user";
+import { JWT_KEY } from "../config/config";
 
 // Retrieves the JWT token from cookies
 const jwtFromRequest = req => {
@@ -15,7 +15,7 @@ const opts = {
 };
 
 // Check if the user exists, given its id
-const authStratregy = new JwtStrategy(opts, (jwtToken, cb) => {
+const authStratregy = new Strategy(opts, (jwtToken, cb) => {
   User.findById(jwtToken.sub, (err, user) => {
     // Error + no user
     if (err) return cb(err, false);
@@ -27,4 +27,4 @@ const authStratregy = new JwtStrategy(opts, (jwtToken, cb) => {
 });
 
 passport.use(authStratregy);
-module.exports = passport.authenticate('jwt', { session: false, failWithError: true });
+export default passport.authenticate('jwt', { session: false, failWithError: true });

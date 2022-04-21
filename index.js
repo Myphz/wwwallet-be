@@ -1,6 +1,6 @@
-const app = require("./src/config/app");
-const authRouter = require("./src/routes/auth.router");
-const { PORT } = require("./src/config/config");
+import app from "./src/config/app";
+import authRouter from "./src/routes/auth.router";
+import { PORT } from "./src/config/config";
 
 app.use("/api/auth", authRouter);
 app.listen(PORT);

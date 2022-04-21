@@ -1,10 +1,10 @@
-const app = require("../config/app");
-const request = require("supertest");
-const mongoose = require("mongoose");
-const authRouter = require("../routes/auth.router");
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
-const { JWT_KEY } = require("../config/config");
+import app from "../config/app";
+import request from "supertest";
+import mongoose from "mongoose";
+import authRouter from "../routes/auth.router";
+import User from "../models/user";
+import jwt from "jsonwebtoken";
+import { JWT_KEY } from "../config/config";
 
 app.use("/", authRouter);
 
@@ -129,7 +129,7 @@ describe("Test authentication system", () => {
 
     it("throws an error when the jwt cookie is invalid", async () => {
       const fakeCookie = "jwt=fakeJWT123; Path=/; HttpOnly; Secure";
-      res = await request(app).get("/verify").set("Cookie", fakeCookie);
+      let res = await request(app).get("/verify").set("Cookie", fakeCookie);
       expect(res.status).toBe(401);
       // Cookie missing
       res = await request(app).get("/verify");

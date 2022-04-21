@@ -1,7 +1,9 @@
-const { DB_STRING } = require("./config");
-const mongoose = require("mongoose");
+import { DB_STRING } from "./config";
+import mongoose from "mongoose";
 
-mongoose.connect(DB_STRING, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+export default function connectDB() {
+  mongoose.connect(DB_STRING, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+}

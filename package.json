@@ -17,6 +17,7 @@
     "supertest": "^6.2.2"
   },
   "scripts": {
-    "test": "jest"
-  }
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "type": "module"
 }
