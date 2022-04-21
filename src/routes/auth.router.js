@@ -52,7 +52,7 @@ router.delete("/login", (req, res) => {
 });
 
 // Verify a user (already using the middleware, so just return success)
-router.post("/verify", authMiddleware, (req, res) => {
+router.get("/verify", authMiddleware, (req, res) => {
 	res.json({ success: true });
 });
 

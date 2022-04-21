@@ -123,16 +123,16 @@ describe("Test authentication system", () => {
       let res = await request(app).post("/login").send({ email, password });
       const cookie = res.headers["set-cookie"][0];
       // Verify the JWT cookie with the endpoint
-      res = await request(app).post("/verify").set("Cookie", cookie);
+      res = await request(app).get("/verify").set("Cookie", cookie);
       expect(res.status).toBe(200);
     });
 
     it("throws an error when the jwt cookie is invalid", async () => {
       const fakeCookie = "jwt=fakeJWT123; Path=/; HttpOnly; Secure";
-      res = await request(app).post("/verify").set("Cookie", fakeCookie);
+      res = await request(app).get("/verify").set("Cookie", fakeCookie);
       expect(res.status).toBe(401);
       // Cookie missing
-      res = await request(app).post("/verify");
+      res = await request(app).get("/verify");
       expect(res.status).toBe(401);
     });
   });
