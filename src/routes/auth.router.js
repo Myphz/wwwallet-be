@@ -14,11 +14,7 @@ router.post("/register", validateParams, (req, res, next) => {
 	const user = new User({ email, password });
 	user.save((err, user) => {
     // If an error has occurred, the email is already registered
-		if (err) {
-      // Set empty jwt token as cookie
-			res.cookie("jwt", "", COOKIE_OPTS);
-			return next(EMAIL_REGISTERED_ERROR);
-		}
+		if (err) return next(EMAIL_REGISTERED_ERROR);
     // Set jwt token and return success
 		res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
 		res.json({ success: true });
@@ -39,9 +35,7 @@ router.post("/login", validateParams, (req, res, next) => {
 		})
     // If an error occured, the email isn't registered
 		.catch(_ => {
-      // Replace jwt token and return error
-			res.cookie("jwt", "", COOKIE_OPTS);
-			next(CREDENTIALS_ERROR);
+			return next(CREDENTIALS_ERROR);
 		});
 });
 
@@ -58,6 +52,8 @@ router.get("/verify", authMiddleware, (req, res) => {
 
 // Error handler function
 router.use((err, req, res, next) => {
+  // Set empty jwt token as cookie
+  res.cookie("jwt", "", COOKIE_OPTS);
 	res.status(err.status);
 	res.json({ success: false, msg: err.message });
 });

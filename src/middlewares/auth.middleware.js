@@ -16,7 +16,7 @@ const opts = {
 
 // Check if the user exists, given its id
 const authStratregy = new JwtStrategy(opts, (jwtToken, cb) => {
-User.findById(jwtToken.sub, (err, user) => {
+  User.findById(jwtToken.sub, (err, user) => {
     // Error + no user
     if (err) return cb(err, false);
     // No error + user
@@ -27,4 +27,4 @@ User.findById(jwtToken.sub, (err, user) => {
 });
 
 passport.use(authStratregy);
-module.exports = passport.authenticate('jwt', { session: false });
+module.exports = passport.authenticate('jwt', { session: false, failWithError: true });
