@@ -19,9 +19,9 @@ router.post("/register", validateParams, (req, res, next) => {
 			res.cookie("jwt", "", COOKIE_OPTS);
 			return next(EMAIL_REGISTERED_ERROR);
 		}
-    // Set jwt token and return 200
+    // Set jwt token and return success
 		res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
-		res.sendStatus(200);
+		res.json({ success: true });
 	});
 });
 
@@ -33,9 +33,9 @@ router.post("/login", validateParams, (req, res, next) => {
     // If the email has been found, check if the password match with the login parameter
 		.then(({ login, user }) => {
 			if (!login) return next(CREDENTIALS_ERROR);
-      // If the password match, issue the jwt token and send 200
+      // If the password match, issue the jwt token and return success
 			res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
-			res.sendStatus(200);
+			res.json({ success: true });
 		})
     // If an error occured, the email isn't registered
 		.catch(_ => {
@@ -45,15 +45,15 @@ router.post("/login", validateParams, (req, res, next) => {
 		});
 });
 
-// Logout the user (replace the jwt cookie and return 200)
+// Logout the user (replace the jwt cookie and return success)
 router.delete("/login", (req, res) => {
 	res.cookie("jwt", "", COOKIE_OPTS);
-	res.sendStatus(200);
+	res.json({ success: true });
 });
 
-// Verify a user (already using the middleware, so just return 200)
+// Verify a user (already using the middleware, so just return success)
 router.post("/verify", authMiddleware, (req, res) => {
-	res.sendStatus(200);
+	res.json({ success: true });
 });
 
 // Error handler function
