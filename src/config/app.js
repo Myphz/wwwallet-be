@@ -1,6 +1,7 @@
 // Load database configuration
-import connectDB from "./database";
+import connectDB from "./database.js";
 connectDB();
+
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";

@@ -1,10 +1,10 @@
-import app from "../config/app";
+import app from "../config/app.js";
 import request from "supertest";
 import mongoose from "mongoose";
-import authRouter from "../routes/auth.router";
+import authRouter from "../routes/auth.router.js";
 import User from "../models/user";
 import jwt from "jsonwebtoken";
-import { JWT_KEY } from "../config/config";
+import { JWT_KEY } from "../config/config.js";
 
 app.use("/", authRouter);
 

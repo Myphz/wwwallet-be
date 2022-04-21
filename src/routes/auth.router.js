@@ -1,10 +1,10 @@
 import express from "express";
-import User from "../models/user";
-import issueJWT from "../helpers/issueJWT.helper";
-import authMiddleware from "../middlewares/auth.middleware";
-import { COOKIE_OPTS } from "../config/config";
-import validateParams from "../middlewares/validateParams.middleware";
-import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } from "../config/errors";
+import User from "../models/user.js";
+import issueJWT from "../helpers/issueJWT.helper.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
+import { COOKIE_OPTS } from "../config/config.js";
+import validateParams from "../middlewares/validateParams.middleware.js";
+import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } from "../config/errors.js";
 
 const router = express.Router();
 

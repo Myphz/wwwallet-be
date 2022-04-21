@@ -1,6 +1,6 @@
-import app from "./src/config/app";
-import authRouter from "./src/routes/auth.router";
-import { PORT } from "./src/config/config";
+import app from "./src/config/app.js";
+import authRouter from "./src/routes/auth.router.js";
+import { PORT } from "./src/config/config.js";
 
 app.use("/api/auth", authRouter);
 app.listen(PORT);

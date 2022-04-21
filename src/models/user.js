@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import { SALT_ROUNDS } from "../config/config";
+import { SALT_ROUNDS } from "../config/config.js";
 
 const UserSchema = new mongoose.Schema({
   email: {

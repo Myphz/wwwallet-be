@@ -1,8 +1,8 @@
-import { DB_STRING } from "./config";
+import { MONGO_URI } from "./config.js";
 import mongoose from "mongoose";
 
 export default function connectDB() {
-  mongoose.connect(DB_STRING, {
+  mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   });

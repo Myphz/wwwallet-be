@@ -1,5 +1,5 @@
-import { INVALID_PARAMETERS, MISSING_PARAMETERS } from "../config/errors";
-import { validateEmail, validatePassword } from "../helpers/validateParams.helper";
+import { INVALID_PARAMETERS, MISSING_PARAMETERS } from "../config/errors.js";
+import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 
 export default function(req, res, next) {
   if (!req.body || !req.body.email || !req.body.password) return next(MISSING_PARAMETERS);

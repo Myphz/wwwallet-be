@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy } from "passport-jwt";
-import User from "../models/user";
-import { JWT_KEY } from "../config/config";
+import User from "../models/user.js";
+import { JWT_KEY } from "../config/config.js";
 
 // Retrieves the JWT token from cookies
 const jwtFromRequest = req => {
