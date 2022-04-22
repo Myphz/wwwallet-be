@@ -1,8 +1,8 @@
 import fetch from "node-fetch";
 import express from "express";
 import isFileValid from "../helpers/isFileValid.helper.js";
-import { writeFile, readFileSync } from "fs";
-import { BINANCE_BASE_URL, COINMARKETCAP_BASE_URL, COINMARKETCAP_API_KEY, CRYTPO_INFO_FILE } from "../config/config.js";
+import fs from "fs";
+import { BINANCE_BASE_URL, COINMARKETCAP_BASE_URL, COINMARKETCAP_API_KEY, COINMARKETCAP_LIMIT, CRYTPO_INFO_FILE } from "../config/config.js";
 import { BINANCE_ERROR } from "../config/errors.js";
 
 const router = express.Router();
@@ -21,9 +21,9 @@ router.get("/binance/*", async (req, res, next) => {
 // For a maximum amount of 1 day (as set in the config file).
 router.get("/info", async (req, res, next) => {
   // Check if the info have already been cached
-  if (isFileValid()) return res.json(JSON.parse(readFileSync(CRYTPO_INFO_FILE)));
+  if (isFileValid()) return res.json(JSON.parse(fs.readFileSync(CRYTPO_INFO_FILE)));
   // Send request to coinmarketcap API
-  const response = await fetch(`${COINMARKETCAP_BASE_URL}listings/latest?limit=5000`, {
+  const response = await fetch(`${COINMARKETCAP_BASE_URL}listings/latest?limit=${COINMARKETCAP_LIMIT}`, {
     headers: {
       "X-CMC_PRO_API_KEY": COINMARKETCAP_API_KEY
     }
@@ -31,7 +31,7 @@ router.get("/info", async (req, res, next) => {
 
   const { data, status } = await response.json();
   // Return error if an error has occurred
-  if (!response.ok) return next({ status: response.status, msg: status.error_message });
+  if (status.error_code) return next({ status: response.status, msg: status.error_message });
 
   const ret = {};
   for (const crypto of data) {
@@ -44,11 +44,8 @@ router.get("/info", async (req, res, next) => {
   };
 
   // Cache file
-  writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret), err => {
-    if (err) {
-      // Log error
-      console.log(err);
-    }
+  fs.writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret), err => {
+    if (err) console.log(err);
   });
 
   res.json(ret);
