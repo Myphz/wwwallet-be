@@ -1,9 +1,26 @@
 import { INVALID_PARAMETERS, MISSING_PARAMETERS } from "../config/errors.js";
-import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 
-export default function(req, res, next) {
-  if (!req.body || !req.body.email || !req.body.password) return next(MISSING_PARAMETERS);
-  const { email, password } = req.body;
-  if (!validateEmail(email) || !validatePassword(password)) return next(INVALID_PARAMETERS);
-  next();
+// Validates parameters given a params object
+
+// Example structure:
+// {
+//   firstParam: {
+//     type: String,
+//     validator: firstParam => firstParam.length > 6
+//   },
+
+//   secondParam: { ... }
+// }
+
+export default function(params) {
+  return function(req, res, next) {
+    if (!req.body) return next(MISSING_PARAMETERS);
+
+    for (const [param, { type, validator }] of Object.entries(params)) {
+      if (!req.body[param]) return next(MISSING_PARAMETERS);
+      if (!req.body[param].constructor === type || !validator(req.body[param])) return next(INVALID_PARAMETERS);
+    };
+
+    next();
+  }
 }
