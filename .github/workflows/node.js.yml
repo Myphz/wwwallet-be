@@ -26,10 +26,10 @@ jobs:
     - run: |
         touch .env
         echo JWT_KEY=${{ secrets.JWT_KEY }} >> .env
+        echo MONGO_URI=${{ secrets.MONGO_TEST_URI }} >> .env
         echo MONGO_TEST_URI=${{ secrets.MONGO_TEST_URI }} >> .env
         echo COINMARKETCAP_API_KEY=${{ secrets.COINMARKETCAP_API_KEY }} >> .env
         echo NODE_ENV=test >> .env
         echo NODE_OPTIONS=--experimental-vm-modules >> .env
         
-    - run: npm run build --if-present
-    - run: npm test
+    - run: npm run test
