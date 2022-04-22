@@ -15,3 +15,4 @@ export const COOKIE_OPTS = {
 export const SALT_ROUNDS = 10;
 
 export const BINANCE_BASE_URL = "https://api.binance.com/api/v3/";
+export const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY;

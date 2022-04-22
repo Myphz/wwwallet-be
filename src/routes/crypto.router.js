@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import express from "express";
-import { BINANCE_BASE_URL } from "../config/config.js";
+import fs from "fs";
+import { BINANCE_BASE_URL, COINMARKETCAP_API_KEY } from "../config/config.js";
 import { BINANCE_ERROR } from "../config/errors.js";
 
 const router = express.Router();
@@ -14,6 +15,28 @@ router.get("/binance/*", async (req, res, next) => {
   } catch {
     next(BINANCE_ERROR);
   }
+});
+
+router.get("/info", async (req, res, next) => {
+  const response = await fetch("https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=5000", {
+    headers: {
+      "X-CMC_PRO_API_KEY": COINMARKETCAP_API_KEY
+    }
+  });
+
+  let { data } = await response.json();
+  const ret = {};
+
+  for (const crypto of data) {
+    const { name, symbol } = crypto;
+    if (symbol in ret) continue;
+    ret[symbol] = {
+      name,
+      mcap: crypto.quote["USD"]["market_cap"]
+    }
+  };
+
+  res.json(ret);
 });
 
 // Error handler
