@@ -1,7 +1,8 @@
 import fetch from "node-fetch";
 import express from "express";
-import fs from "fs";
-import { BINANCE_BASE_URL, COINMARKETCAP_BASE_URL, COINMARKETCAP_API_KEY } from "../config/config.js";
+import isFileValid from "../helpers/isFileValid.helper.js";
+import { writeFile, readFileSync } from "fs";
+import { BINANCE_BASE_URL, COINMARKETCAP_BASE_URL, COINMARKETCAP_API_KEY, CRYTPO_INFO_FILE } from "../config/config.js";
 import { BINANCE_ERROR } from "../config/errors.js";
 
 const router = express.Router();
@@ -15,7 +16,12 @@ router.get("/binance/*", async (req, res, next) => {
   res.json(await data.json());
 });
 
+// Middleware endpoint to get market cap and name-symbol conversion for the top 5000 crypto.
+// IMPORTANT: To limit the traffic to CoinMarketCAP API, the response will be cached in a JSON file
+// For a maximum amount of 1 day (as set in the config file).
 router.get("/info", async (req, res, next) => {
+  // Check if the info have already been cached
+  if (isFileValid()) return res.json(JSON.parse(readFileSync(CRYTPO_INFO_FILE)));
   // Send request to coinmarketcap API
   const response = await fetch(`${COINMARKETCAP_BASE_URL}listings/latest?limit=5000`, {
     headers: {
@@ -36,6 +42,14 @@ router.get("/info", async (req, res, next) => {
       mcap: crypto.quote["USD"]["market_cap"]
     }
   };
+
+  // Cache file
+  writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret), err => {
+    if (err) {
+      // Log error
+      console.log(err);
+    }
+  });
 
   res.json(ret);
 });
