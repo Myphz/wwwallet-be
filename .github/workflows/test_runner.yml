@@ -1,0 +1,23 @@
+name: Automatic Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 14
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run test
+      env:
+        JWT_KEY: ${{ secrets.JWT_KEY }}
+        MONGO_URI: ${{ secrets.MONGO_TEST_URI }}
+        MONGO_TEST_URI: ${{ secrets.MONGO_TEST_URI }}
+        COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
+        NODE_ENV: test
+        NODE_OPTIONS: --experimental-vm-modules
