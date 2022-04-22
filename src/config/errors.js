@@ -9,3 +9,6 @@ export const BINANCE_ERROR = { message: "Binance fetch error", status: 404 };
 
 // Generic error
 export const SERVER_ERROR = { message: "Server error", status: 500 };
+
+// Transactions errors
+export const TRANSACTION_NOT_FOUND = { message: "Invalid transaction id", status: 404 };
