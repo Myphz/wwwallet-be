@@ -1,7 +1,7 @@
-const { INVALID_PARAMETERS, MISSING_PARAMETERS } = require("../config/errors");
-const { validateEmail, validatePassword } = require("../helpers/validateParams.helper");
+import { INVALID_PARAMETERS, MISSING_PARAMETERS } from "../config/errors.js";
+import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 
-module.exports = (req, res, next) => {
+export default function(req, res, next) {
   if (!req.body || !req.body.email || !req.body.password) return next(MISSING_PARAMETERS);
   const { email, password } = req.body;
   if (!validateEmail(email) || !validatePassword(password)) return next(INVALID_PARAMETERS);

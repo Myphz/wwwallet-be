@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
-const { JWT_KEY } = require('../config/config');
+import jwt from "jsonwebtoken";
+import { JWT_KEY } from "../config/config.js";
 
 // Function to sign a jwt token, given the user
-module.exports = user => {
+export default function(user) {
   const payload = {
       sub: user._id,
   };

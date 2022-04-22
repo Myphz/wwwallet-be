@@ -1,10 +1,11 @@
-const express = require("express");
-const User = require("../models/user");
-const issueJWT = require("../helpers/issueJWT.helper");
-const authMiddleware = require("../middlewares/auth.middleware");
-const { COOKIE_OPTS } = require("../config/config");
-const validateParams = require("../middlewares/validateParams.middleware");
-const { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } = require("../config/errors");
+import express from "express";
+import User from "../models/user.js";
+import issueJWT from "../helpers/issueJWT.helper.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
+import { COOKIE_OPTS } from "../config/config.js";
+import validateParams from "../middlewares/validateParams.middleware.js";
+import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } from "../config/errors.js";
+
 const router = express.Router();
 
 // Register endpoint
@@ -58,4 +59,4 @@ router.use((err, req, res, next) => {
 	res.json({ success: false, msg: err.message });
 });
 
-module.exports = router;
+export default router;

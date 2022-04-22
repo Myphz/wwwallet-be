@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const { SALT_ROUNDS } = require('../config/config');
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import { SALT_ROUNDS } from "../config/config.js";
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -45,6 +45,4 @@ UserSchema.statics.checkLogin = function(email, password) {
   });
 }
 
-module.exports = mongoose.model("User", UserSchema);
-
-
+export default mongoose.model("User", UserSchema);
