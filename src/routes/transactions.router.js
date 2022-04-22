@@ -28,6 +28,11 @@ const validator = {
   },
 };
 
+// Get all transactions
+router.get("/", authMiddleware, (req, res) => {
+  res.json({ success: true, transactions: req.user.transactions });
+});
+
 // Create new transaction
 router.post("/", authMiddleware, validateParams(validator), (req, res, next) => {
   const { isBuy, pair, price, quantity, date } = req.body;
@@ -59,6 +64,26 @@ router.put("/", authMiddleware, validateParams({ id: { type: String }, ...valida
     };
 
     res.json({ success: true, newId: req.user.transactions[i]._id });
+  });
+});
+
+// Delete transaction
+router.delete("/", authMiddleware, validateParams({ id: { type: String } }), (req, res, next) => {
+  const { id } = req.body;
+
+  const i = req.user.transactions.findIndex(transaction => transaction._id.toString() === id);
+  if (i === -1) return next(TRANSACTION_NOT_FOUND);
+
+  req.user.transactions.splice(i, 1);
+
+  req.user.save(err => {
+    if (err) {
+      console.log(err);
+      // This should never fail, so send a generic 500 response
+      return next(SERVER_ERROR);
+    };
+
+    res.json({ success: true });
   });
 });
 
