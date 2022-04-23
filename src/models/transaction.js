@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 
 const TransactionSchema = new mongoose.Schema({
-  isBuy: {
-    type: Boolean,
+  quote: {
+    type: String,
     required: true
   },
 
-  pair: {
-    type: String,
+  isBuy: {
+    type: Boolean,
     required: true
   },
 

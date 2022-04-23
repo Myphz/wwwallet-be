@@ -21,9 +21,26 @@ const UserSchema = new mongoose.Schema({
     default: false,
   },
 
+  // Save transactions as a Map with variable keys
+  // Example of transactions:
+
+  // {
+  //   "BTC": {
+  //     [
+  //       quote: "USDC",
+  //       isBuy: true,
+  //       price: 239822.22,
+  //       quantity: 0.12,
+  //       date: 353453453
+  //     ]
+  //   },
+  //  "ETH": { ... }
+  // }
+  
   transactions: {
-    type: [Transaction],
-    default: []
+    type: Map,
+    of: [Transaction],
+    default: new Map()
   }
 });
 
