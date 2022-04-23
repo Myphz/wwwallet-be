@@ -20,16 +20,18 @@ const validator = {
   },
 
   price: {
-    type: Number,
+    type: String,
+    validator: value => parseFloat(value) > 0 && parseFloat(value) == value
   },
 
   quantity: {
-    type: Number,
+    type: String,
+    validator: value => parseFloat(value) > 0 && parseFloat(value) == value
   },
 
   date: {
     type: Number,
-    validator: date => date <= +new Date()
+    validator: date => date >= 0 && date <= +new Date()
   },
 };
 
@@ -59,8 +61,8 @@ router.post("/", authMiddleware, validateParams(validator), (req, res, next) => 
       // This should never fail, so send a generic 500 response
       return next(SERVER_ERROR);
     };
-
-    res.json({ success: true });
+    // Return success and the new transaction id
+    res.json({ success: true, id: req.user.transactions[crypto][transactions[crypto].length - 1]._id });
   });
 });
 
