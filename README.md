@@ -4,6 +4,6 @@ Backend using MEVN stack for wwwallet
 - [X] Auth system with JWT
 - [X] Database configuration
 - [X] User Model
-- [ ] Transactions Model
-- [ ] Transaction Management
+- [X] Transactions Model
+- [X] Transaction Management
 - [ ] Advanced user API ( Email confirmation, Recover password, Change data...)

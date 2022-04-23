@@ -5,11 +5,24 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import { COOKIE_OPTS } from "../config/config.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } from "../config/errors.js";
+import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 
 const router = express.Router();
 
+const validator = {
+  email: {
+    type: String,
+    validator: validateEmail
+  },
+
+  password: {
+    type: String,
+    validator: validatePassword
+  }
+};
+
 // Register endpoint
-router.post("/register", validateParams, (req, res, next) => {
+router.post("/register", validateParams(validator), (req, res, next) => {
 	const { email, password } = req.body;
   // Create new user and try to save it
 	const user = new User({ email, password });
@@ -23,7 +36,7 @@ router.post("/register", validateParams, (req, res, next) => {
 });
 
 // Login endpoint
-router.post("/login", validateParams, (req, res, next) => {
+router.post("/login", validateParams(validator), (req, res, next) => {
   // If any field is missing, return error
 	const { email, password } = req.body;
 	User.checkLogin(email, password)
