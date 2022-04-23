@@ -13,7 +13,7 @@ const TransactionSchema = new mongoose.Schema({
 
   price: {
     type: mongoose.Decimal128,
-    required: true
+    required: true,
   },
 
   quantity: {

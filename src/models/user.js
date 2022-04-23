@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { SALT_ROUNDS } from "../config/config.js";
 import Transaction from "./transaction.js";
+import { getTransactions } from "../helpers/transaction.helper.js";
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -40,7 +41,8 @@ const UserSchema = new mongoose.Schema({
   transactions: {
     type: Map,
     of: [Transaction],
-    default: new Map()
+    default: new Map(),
+    get: getTransactions,
   }
 });
 

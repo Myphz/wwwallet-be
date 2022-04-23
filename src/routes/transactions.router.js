@@ -2,6 +2,7 @@ import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import { SERVER_ERROR, TRANSACTION_NOT_FOUND } from "../config/errors.js";
+import { findTransactionByID } from "../helpers/transaction.helper.js";
 
 const router = express.Router();
 
@@ -40,16 +41,18 @@ router.get("/", authMiddleware, (req, res) => {
 // Create new transaction
 router.post("/", authMiddleware, validateParams(validator), (req, res, next) => {
   const { crypto, quote, isBuy, price, quantity, date } = req.body;
+  const transactions = req.user.transactions;
 
   // Check if the crypto is already in the Map
-  if (req.user.transactions.has(crypto)) {
+  if (crypto in transactions) {
     // If so, add the new transaction
-    req.user.transactions.get(crypto).push({ quote, isBuy, price, quantity, date });
+    transactions[crypto].push({ quote, isBuy, price, quantity, date });
   } else {
     // Otherwise, create key
-    req.user.transactions.set(crypto, [{ quote, isBuy, price, quantity, date }]);
+    transactions[crypto] = [{ quote, isBuy, price, quantity, date }];
   }
 
+  req.user.transactions = transactions;
   req.user.save(err => {
     if (err) {
       console.log(err);
@@ -64,14 +67,27 @@ router.post("/", authMiddleware, validateParams(validator), (req, res, next) => 
 // Update existing transaction
 router.put("/", authMiddleware, validateParams({ id: { type: String }, ...validator }), (req, res, next) => {
   const { id, crypto, quote, isBuy, price, quantity, date } = req.body;
+  const transactions = req.user.transactions;
 
-  if (!req.user.transactions.has(crypto)) return next(TRANSACTION_NOT_FOUND);
-  const i = req.user.transactions.get(crypto).findIndex(transaction => transaction._id.toString() === id);
-  if (i === -1) return next(TRANSACTION_NOT_FOUND);
+  // Find crypto & index of the transaction to replace
+  let { replaceCrypto, i } = findTransactionByID(transactions, id);
+  if (!replaceCrypto) return next(TRANSACTION_NOT_FOUND);
 
-  req.user.transactions.get(crypto)[i] = { quote, isBuy, price, quantity, date };
+  // If the crypto has changed, remove the transaction and add a new one
+  if (replaceCrypto !== crypto) {
+    transactions[replaceCrypto].splice(i, 1);
+    // Check if the replaceCrypto transactions key is empty. If so, delete it
+    if (!transactions[replaceCrypto].length) delete transactions[replaceCrypto];
+    // Check if the new crypto transaction key is empty. If so, add it
+    if (!transactions[crypto]) transactions[crypto] = [];
 
-  req.user.markModified("transactions");
+    transactions[crypto].push({ quote, isBuy, price, quantity, date });
+    i = transactions[crypto].length - 1;
+  } else {
+    transactions[crypto][i] = { quote, isBuy, price, quantity, date };
+  };
+
+  req.user.transactions = transactions;
   req.user.save(err => {
     if (err) {
       console.log(err);
@@ -79,24 +95,24 @@ router.put("/", authMiddleware, validateParams({ id: { type: String }, ...valida
       return next(SERVER_ERROR);
     };
 
-    res.json({ success: true, newId: req.user.transactions.get(crypto)[i]._id });
+    res.json({ success: true, newId: req.user.transactions[crypto][i]._id });
   });
 });
 
 // Delete transaction
-router.delete("/", authMiddleware, validateParams({ id: { type: String }, crypto: { type: String } }), (req, res, next) => {
-  const { id, crypto } = req.body;
+router.delete("/", authMiddleware, validateParams({ id: { type: String } }), (req, res, next) => {
+  const { id } = req.body;
+  const transactions = req.user.transactions;
 
-  if (!req.user.transactions.has(crypto)) return next(TRANSACTION_NOT_FOUND);
-  const i = req.user.transactions.get(crypto).findIndex(transaction => transaction._id.toString() === id);
-  if (i === -1) return next(TRANSACTION_NOT_FOUND);
+  const { replaceCrypto, i } = findTransactionByID(transactions, id);
+  if (!replaceCrypto) return next(TRANSACTION_NOT_FOUND);
 
   // Remove the transaction at the specific index
-  req.user.transactions.get(crypto).splice(i, 1);
+  transactions[replaceCrypto].splice(i, 1);
   // Delete the key if there are no transactions
-  if (req.user.transactions.get(crypto).length === 0) req.user.transactions.delete(crypto);
+  if (transactions[replaceCrypto].length === 0) delete transactions[replaceCrypto];
 
-  req.user.markModified("transactions");
+  req.user.transactions = transactions;
   req.user.save(err => {
     if (err) {
       console.log(err);
