@@ -16,7 +16,7 @@ afterAll(async () => {
 describe("Test transactions system", () => {
   const email = "testemail@email.com";
   const password = "testpassword12";
-  const transactionData =  { crypto: "BTC", quote: "USDC", isBuy: true, price: "24323.2342", quantity: "1.430000002", date: 332412223 };
+  const transactionData =  { crypto: "BTC", base: "USDC", isBuy: true, price: "24323.2342", quantity: "1.430000002", date: 332412223, notes: "test notes" };
   let jwt;
 
   beforeEach(async () => {
@@ -58,6 +58,9 @@ describe("Test transactions system", () => {
       let { quantity, ...testData2 } = transactionData;
       res = await request(app).post("/").set("Cookie", jwt).send(testData2).expect(400);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
+      // Missing 'notes' (but still ok as it is not required)
+      let { notes, ...testData3 } = transactionData;
+      await request(app).post("/").set("Cookie", jwt).send(testData3).expect(200);
 
       // Invalid price
       res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, price: "invalid value" }).expect(422);

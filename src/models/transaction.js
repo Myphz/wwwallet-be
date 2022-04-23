@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const TransactionSchema = new mongoose.Schema({
-  quote: {
+  base: {
     type: String,
     required: true
   },
@@ -25,6 +25,10 @@ const TransactionSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+
+  notes: {
+    type: String
+  }
 });
 
 export default TransactionSchema;

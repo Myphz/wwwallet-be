@@ -11,7 +11,7 @@ const validator = {
     type: String
   },
 
-  quote: {
+  base: {
     type: String,
   },
 
@@ -42,16 +42,16 @@ router.get("/", authMiddleware, (req, res) => {
 
 // Create new transaction
 router.post("/", authMiddleware, validateParams(validator), (req, res, next) => {
-  const { crypto, quote, isBuy, price, quantity, date } = req.body;
+  const { crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
   // Check if the crypto is already in the Map
   if (crypto in transactions) {
     // If so, add the new transaction
-    transactions[crypto].push({ quote, isBuy, price, quantity, date });
+    transactions[crypto].push({ crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) });
   } else {
     // Otherwise, create key
-    transactions[crypto] = [{ quote, isBuy, price, quantity, date }];
+    transactions[crypto] = [{ crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) }];
   }
 
   req.user.transactions = transactions;
@@ -68,7 +68,7 @@ router.post("/", authMiddleware, validateParams(validator), (req, res, next) => 
 
 // Update existing transaction
 router.put("/", authMiddleware, validateParams({ id: { type: String }, ...validator }), (req, res, next) => {
-  const { id, crypto, quote, isBuy, price, quantity, date } = req.body;
+  const { id, crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
   // Find crypto & index of the transaction to replace
@@ -83,10 +83,10 @@ router.put("/", authMiddleware, validateParams({ id: { type: String }, ...valida
     // Check if the new crypto transaction key is empty. If so, add it
     if (!transactions[crypto]) transactions[crypto] = [];
 
-    transactions[crypto].push({ quote, isBuy, price, quantity, date });
+    transactions[crypto].push({ crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) });
     i = transactions[crypto].length - 1;
   } else {
-    transactions[crypto][i] = { quote, isBuy, price, quantity, date };
+    transactions[crypto][i] = { crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) };
   };
 
   req.user.transactions = transactions;
