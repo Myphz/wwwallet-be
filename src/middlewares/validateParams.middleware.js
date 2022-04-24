@@ -17,7 +17,7 @@ export default function(params) {
     if (!req.body) return next(MISSING_PARAMETERS);
 
     for (const [param, { type, validator }] of Object.entries(params)) {
-      if (!req.body[param]) return next(MISSING_PARAMETERS);
+      if (typeof req.body[param] === "undefined") return next(MISSING_PARAMETERS);
       if (req.body[param].constructor !== type || (validator && !validator(req.body[param]))) return next(INVALID_PARAMETERS);
     };
 
