@@ -48,6 +48,8 @@ const UserSchema = new mongoose.Schema({
 
 // Middleware that gets called before a user is saved to hash the password
 UserSchema.pre("save", async function(next) {
+  // Hash password only if the document is new
+  if (!this.isNew) return;
   try {
     this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
     next();
@@ -63,7 +65,6 @@ UserSchema.statics.checkLogin = function(email, password) {
       if (err || !user) 
         reject({ login: false, user: null });
       else
-        
         resolve({ login: await bcrypt.compare(password, user.password), user });
     });
   });
