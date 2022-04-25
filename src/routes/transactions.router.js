@@ -1,7 +1,8 @@
 import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
-import { SERVER_ERROR, TRANSACTION_NOT_FOUND } from "../config/errors.js";
+import Big from "big.js";
+import { SERVER_ERROR, TRANSACTION_NOT_FOUND, TRANSACTION_INVALID } from "../config/errors.js";
 import { findTransactionByID } from "../helpers/transaction.helper.js";
 
 const router = express.Router();
@@ -41,7 +42,7 @@ router.get("/", authMiddleware, (req, res) => {
 });
 
 // Create new transaction
-router.post("/", authMiddleware, validateParams(validator), (req, res, next) => {
+router.post("/", validateParams(validator), authMiddleware, (req, res, next) => {
   const { crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
@@ -52,7 +53,14 @@ router.post("/", authMiddleware, validateParams(validator), (req, res, next) => 
   } else {
     // Otherwise, create key
     transactions[crypto] = [{ crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) }];
-  }
+  };
+
+  // Check if the total quantity is positive
+  const total = transactions[crypto].reduce(
+    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
+    new Big(0)
+  );
+  if (total.s === -1) return next(TRANSACTION_INVALID);
 
   req.user.transactions = transactions;
   req.user.save(err => {
@@ -67,7 +75,7 @@ router.post("/", authMiddleware, validateParams(validator), (req, res, next) => 
 });
 
 // Update existing transaction
-router.put("/", authMiddleware, validateParams({ id: { type: String }, ...validator }), (req, res, next) => {
+router.put("/", validateParams({ id: { type: String }, ...validator }), authMiddleware, (req, res, next) => {
   const { id, crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
@@ -89,6 +97,13 @@ router.put("/", authMiddleware, validateParams({ id: { type: String }, ...valida
     transactions[crypto][i] = { crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) };
   };
 
+  // Check if the total quantity is positive
+  const total = transactions[crypto].reduce(
+    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
+    new Big(0)
+  );
+  if (total.s === -1) return next(TRANSACTION_INVALID);
+
   req.user.transactions = transactions;
   req.user.save(err => {
     if (err) {
@@ -102,7 +117,7 @@ router.put("/", authMiddleware, validateParams({ id: { type: String }, ...valida
 });
 
 // Delete transaction
-router.delete("/", authMiddleware, validateParams({ id: { type: String } }), (req, res, next) => {
+router.delete("/", validateParams({ id: { type: String } }), authMiddleware, (req, res, next) => {
   const { id } = req.body;
   const transactions = req.user.transactions;
 
