@@ -340,7 +340,7 @@ describe("Test transactions system", () => {
       // Create SELL transaction
       await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
       // Return error when trying to remove the BUY transaction
-      await request(app).delete("/").set("Cookie", jwt).send({ id }).expect(400);
+      await request(app).delete("/").set("Cookie", jwt).send({ id }).expect(422);
     });
   });
 });
