@@ -332,5 +332,15 @@ describe("Test transactions system", () => {
       // Return error if the id is not provided
       await request(app).delete("/").set("Cookie", jwt).expect(400);
     });
+
+    it("throws an error when the removed transaction leads to a negative balance", async () => {
+      // Create BUY transaction
+      const res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      const { id } = res.body;
+      // Create SELL transaction
+      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
+      // Return error when trying to remove the BUY transaction
+      await request(app).delete("/").set("Cookie", jwt).send({ id }).expect(400);
+    });
   });
 });

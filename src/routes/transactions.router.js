@@ -133,6 +133,12 @@ router.delete("/", validateParams({ id: { type: String } }), authMiddleware, (re
 
   // Remove the transaction at the specific index
   transactions[replaceCrypto].splice(i, 1);
+  // Check if the balance is positive
+  const total = transactions[replaceCrypto].reduce(
+    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
+    new Big(0)
+  );
+  if (total.s === -1) return next(TRANSACTION_INVALID);
   // Delete the key if there are no transactions
   if (transactions[replaceCrypto].length === 0) delete transactions[replaceCrypto];
 
