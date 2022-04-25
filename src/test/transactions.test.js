@@ -272,7 +272,18 @@ describe("Test transactions system", () => {
       await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, crypto: newCrypto, isBuy: false, id }).expect(422);
       // Switch quantity, crypto and side (doesn't throw error as the quantities are now equal, so the total is 0)
       await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto, isBuy: false, id }).expect(200);
+    });
 
+    it("throws error when the crypto is switched and the new balance is insufficient", async () => {
+      const newCrypto = "NEW_CRYPTO";
+      // Create BUY transaction
+      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      const { id } = res.body;
+      // Create SELL transaction
+      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
+
+      // Try to modify the original BUY transaction crypto
+      await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, id, crypto: newCrypto }).expect(422);
     });
   });
 

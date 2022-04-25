@@ -97,8 +97,15 @@ router.put("/", validateParams({ id: { type: String }, ...validator }), authMidd
     transactions[crypto][i] = { crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) };
   };
 
-  // Check if the total quantity is positive
-  const total = transactions[crypto].reduce(
+  // Check if the total quantity is positive (of both cryptos!)
+  let total = transactions[crypto].reduce(
+    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
+    new Big(0)
+  );
+  if (total.s === -1) return next(TRANSACTION_INVALID);
+  
+  // The replaceCrypto transactions might be missing
+  total = (transactions[replaceCrypto] || []).reduce(
     (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
     new Big(0)
   );
