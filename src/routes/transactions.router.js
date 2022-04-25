@@ -38,7 +38,7 @@ const validator = {
 
 // Get all transactions
 router.get("/", authMiddleware, (req, res) => {
-  res.json({ success: true, transactions: req.user.transactions });
+  res.json({ success: true, transactions: req.user.transactions, msg: "Transactions retrieved successfully" });
 });
 
 // Create new transaction
@@ -70,7 +70,7 @@ router.post("/", validateParams(validator), authMiddleware, (req, res, next) => 
       return next(SERVER_ERROR);
     };
     // Return success and the new transaction id
-    res.json({ success: true, id: req.user.transactions[crypto][transactions[crypto].length - 1]._id });
+    res.json({ success: true, id: req.user.transactions[crypto][transactions[crypto].length - 1]._id, msg: "Transaction added successfully" });
   });
 });
 
@@ -119,7 +119,7 @@ router.put("/", validateParams({ id: { type: String }, ...validator }), authMidd
       return next(SERVER_ERROR);
     };
 
-    res.json({ success: true, newId: req.user.transactions[crypto][i]._id });
+    res.json({ success: true, newId: req.user.transactions[crypto][i]._id, msg: "Transaction updated successfully" });
   });
 });
 
@@ -150,7 +150,7 @@ router.delete("/", validateParams({ id: { type: String } }), authMiddleware, (re
       return next(SERVER_ERROR);
     };
 
-    res.json({ success: true });
+    res.json({ success: true, msg: "Transaction deleted successfully" });
   });
 });
 
