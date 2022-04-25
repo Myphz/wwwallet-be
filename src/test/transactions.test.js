@@ -130,6 +130,21 @@ describe("Test transactions system", () => {
       }));
     });
 
+    it("creates 2 transactions buy & sell", async () => {
+      // Send BUY transaction
+      await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      // Send SELL transaction with same amount (so the total is 0)
+      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
+    });
+
+    it("throws error when the balance is insufficient", async () => {
+      const preciseQuantity = "0.0000000000000000000001";
+      const preciseQuantityBigger = "0.00000000000000000000011";
+      // Create BUY transaction
+      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      // Create SELL transaction with 0.00000000000000000000001 more (should fail as the balance can't be negative, you can't sell more than you have)
+      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, isBuy: false }).expect(422);
+    });
   });
 
   describe("Test update transaction endpoint", () => {
@@ -226,6 +241,38 @@ describe("Test transactions system", () => {
       await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData, quantity: "-19" }).expect(422);
       // Invalid id
       await request(app).put("/").set("Cookie", jwt).send({ id: invalidId, ...transactionData }).expect(404);
+    });
+
+    it("updates 2 transactions buy & sell", async () => {
+      const newCrypto = "NEW_CRYPTO";
+      const preciseQuantity = "0.0000000000000000000001";
+      // Send BUY transaction with different crypto
+      let res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      let { id } = res.body;
+      // Switch its crypto
+      await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData, crypto: newCrypto }).expect(200);
+
+      // Create random BUY transaction
+      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      id = res.body.id;
+      // Switch its crypto and side
+      await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData, crypto: newCrypto, isBuy: false }).expect(200);
+    });
+
+    it("throws error when the balance is insufficient", async () => {
+      const preciseQuantity = "0.0000000000000000000001";
+      const preciseQuantityBigger = "0.00000000000000000000011";
+      const newCrypto = "NEW_CRYPTO";
+      // Create BUY transaction with NEW CRYPTO
+      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto }).expect(200);
+      // Create BUY transaction with different crypto
+      let res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData }).expect(200);
+      let { id } = res.body;
+      // Switch quantity, crypto and side (throws error as preciseQuantityBigger > preciseQuantity)
+      await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, crypto: newCrypto, isBuy: false, id }).expect(422);
+      // Switch quantity, crypto and side (doesn't throw error as the quantities are now equal, so the total is 0)
+      await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto, isBuy: false, id }).expect(200);
+
     });
   });
 
