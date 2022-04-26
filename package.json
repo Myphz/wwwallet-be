@@ -8,6 +8,7 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
+    "mongodb-memory-server": "^8.5.1",
     "mongoose": "^6.3.1",
     "node-fetch": "^3.2.3",
     "passport": "^0.5.2",
@@ -18,7 +19,7 @@
     "supertest": "^6.2.2"
   },
   "scripts": {
-    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
+    "test": "MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-5.0.3.tgz NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
   },
   "type": "module"
 }

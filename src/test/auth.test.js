@@ -5,8 +5,16 @@ import authRouter from "../routes/auth.router.js";
 import User from "../models/user";
 import jwt from "jsonwebtoken";
 import { JWT_KEY } from "../config/config.js";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
+let mongoServer;
 app.use("/", authRouter);
+const req = request(app);
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri())
+}, 120000);
 
 beforeEach(async () => {
   // Delete all users
@@ -15,6 +23,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
 	await mongoose.connection.close();
+  await mongoServer.stop();
 });
 
 describe("Test authentication system", () => {
@@ -23,7 +32,7 @@ describe("Test authentication system", () => {
 
   describe("Test register endpoint", () => {
     it("registers a user", async () => {
-      const res = await request(app).post("/register").send({ email, password });
+      const res = await req.post("/register").send({ email, password });
       expect(res.status).toBe(200);
       // Grab JWT token
       const cookie = res.headers["set-cookie"][0];
@@ -36,10 +45,10 @@ describe("Test authentication system", () => {
     });
 
     it("throws an error when registering two users with the same email", async () => {
-      let res = await request(app).post("/register").send({ email, password });
+      let res = await req.post("/register").send({ email, password });
       expect(res.status).toBe(200);
 
-      res = await request(app).post("/register").send({ email, password });
+      res = await req.post("/register").send({ email, password });
       // Email already registered error
       expect(res.status).toBe(409);
       // Grab JWT token
@@ -50,13 +59,13 @@ describe("Test authentication system", () => {
     });
 
     it("throws an error when registering a user with missing credentials", async () => {
-      let res = await request(app).post("/register");
+      let res = await req.post("/register");
       expect(res.status).toBe(400);
 
-      res = await request(app).post("/register").send({ email });
+      res = await req.post("/register").send({ email });
       expect(res.status).toBe(400);
 
-      res = await request(app).post("/register").send({ password });
+      res = await req.post("/register").send({ password });
       expect(res.status).toBe(400);
     });
 
@@ -64,13 +73,13 @@ describe("Test authentication system", () => {
       const invalidEmail = "invalid@.com";
       const invalidPassword = "test";
       // Invalid password
-      let res = await request(app).post("/register").send({ email, password: invalidPassword });
+      let res = await req.post("/register").send({ email, password: invalidPassword });
       expect(res.status).toBe(422);
       // Invalid email
-      res = await request(app).post("/register").send({ email: invalidEmail, password });
+      res = await req.post("/register").send({ email: invalidEmail, password });
       expect(res.status).toBe(422);
       // Invalid email and password
-      res = await request(app).post("/register").send({ email: invalidEmail, password: invalidPassword });
+      res = await req.post("/register").send({ email: invalidEmail, password: invalidPassword });
       expect(res.status).toBe(422);
     });
   });
@@ -83,7 +92,7 @@ describe("Test authentication system", () => {
     });
 
     it("logins a user", async () => {
-      const res = await request(app).post("/login").send({ email, password });
+      const res = await req.post("/login").send({ email, password });
       expect(res.status).toBe(200);
       // Grab JWT token
       const cookie = res.headers["set-cookie"][0];
@@ -99,14 +108,14 @@ describe("Test authentication system", () => {
       const fakeEmail = "fak@email.com";
       const fakePassword = "fakepassword123";
       // Wrong email and password
-      let res = await request(app).post("/login").send({ email: fakeEmail, password: fakePassword });
+      let res = await req.post("/login").send({ email: fakeEmail, password: fakePassword });
       expect(res.status).toBe(401);
 
       const cookie = res.headers["set-cookie"][0];
       const jwtToken = cookie.split("=")[1].split(";")[0];
       expect(jwtToken).toBe("");
       // Wrong password
-      res = await request(app).post("/login").send({ email, password: fakePassword });
+      res = await req.post("/login").send({ email, password: fakePassword });
       expect(res.status).toBe(401);
     });
   });
@@ -120,19 +129,19 @@ describe("Test authentication system", () => {
 
     it("logins and verifies a user", async () => {
       // Get JWT cookie
-      let res = await request(app).post("/login").send({ email, password });
+      let res = await req.post("/login").send({ email, password });
       const cookie = res.headers["set-cookie"][0];
       // Verify the JWT cookie with the endpoint
-      res = await request(app).get("/verify").set("Cookie", cookie);
+      res = await req.get("/verify").set("Cookie", cookie);
       expect(res.status).toBe(200);
     });
 
     it("throws an error when the jwt cookie is invalid", async () => {
       const fakeCookie = "jwt=fakeJWT123; Path=/; HttpOnly; Secure";
-      let res = await request(app).get("/verify").set("Cookie", fakeCookie);
+      let res = await req.get("/verify").set("Cookie", fakeCookie);
       expect(res.status).toBe(401);
       // Cookie missing
-      res = await request(app).get("/verify");
+      res = await req.get("/verify");
       expect(res.status).toBe(401);
     });
   });
@@ -140,7 +149,7 @@ describe("Test authentication system", () => {
   describe("Test logout endpoint", () => {
     it("unsets the jwt cookie", async () => {
       // Get JWT cookie
-      let res = await request(app).delete("/login");
+      let res = await req.delete("/login");
       expect(res.status).toBe(200);
       const cookie = res.headers["set-cookie"][0];
       const jwtToken = cookie.split("=")[1].split(";")[0];

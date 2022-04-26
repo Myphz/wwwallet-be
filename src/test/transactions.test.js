@@ -4,13 +4,22 @@ import mongoose from "mongoose";
 import User from "../models/user";
 import authRouter from "../routes/auth.router.js";
 import transactionsRouter from "../routes/transactions.router.js";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
+let mongoServer;
 app.use("/", transactionsRouter);
 app.use("/auth", authRouter);
+const req = request(app);
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri())
+}, 120000);
 
 afterAll(async () => {
   await User.deleteMany({});
 	await mongoose.connection.close();
+  await mongoServer.stop();
 });
 
 describe("Test transactions system", () => {
@@ -22,17 +31,17 @@ describe("Test transactions system", () => {
   beforeEach(async () => {
     await User.deleteMany({});
     // Save the user and get jwt token
-    const res = await request(app).post("/auth/register").send({ email, password });
+    const res = await req.post("/auth/register").send({ email, password });
     jwt = res.headers["set-cookie"][0];
   });
 
   describe("Test create & get transaction endpoint", () => {
     it("creates and gets a new transaction", async () => {
       // Create transaction
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, id: expect.any(String) }));
       // Get transactions
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       const data = res.body;
       expect(data.success).toBe(true);
       // Expect only 1 transaction
@@ -52,38 +61,38 @@ describe("Test transactions system", () => {
     it("throws error on parameters missing or invalid values", async () => {
       // Missing 'crypto'
       let { crypto, ...testData } = transactionData;
-      let res = await request(app).post("/").set("Cookie", jwt).send(testData).expect(400);
+      let res = await req.post("/").set("Cookie", jwt).send(testData).expect(400);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
       // Missing 'quantity'
       let { quantity, ...testData2 } = transactionData;
-      res = await request(app).post("/").set("Cookie", jwt).send(testData2).expect(400);
+      res = await req.post("/").set("Cookie", jwt).send(testData2).expect(400);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
       // Missing 'notes' (but still ok as it is not required)
       let { notes, ...testData3 } = transactionData;
-      await request(app).post("/").set("Cookie", jwt).send(testData3).expect(200);
+      await req.post("/").set("Cookie", jwt).send(testData3).expect(200);
 
       // Invalid price
-      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, price: "invalid value" }).expect(422);
+      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, price: "invalid value" }).expect(422);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
-      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, price: "-98" }).expect(422);
+      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, price: "-98" }).expect(422);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
 
       // Invalid date
-      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, date: 999999999999999 }).expect(422);
+      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, date: 999999999999999 }).expect(422);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
-      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, date: -100 }).expect(422);
+      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, date: -100 }).expect(422);
       expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
     });
 
     it("creates and gets 2 new transactions with the same crypto", async () => {
       // Create transactions
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, id: expect.any(String) }));
-      res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, id: expect.any(String) }));
 
       // Get transactions
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       const data = res.body;
       expect(data.success).toBe(true);
       // Expect 1 crypto with 2 transaction
@@ -105,13 +114,13 @@ describe("Test transactions system", () => {
     it("creates and gets 2 new transactions with different crypto", async () => {
       const testCrypto = "testcrypto";
       // Create transactions
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, id: expect.any(String) }));
-      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, crypto: testCrypto}).expect(200);
+      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, crypto: testCrypto}).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, id: expect.any(String) }));
 
       // Get transactions
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       const data = res.body;
       expect(data.success).toBe(true);
       // Expect 2 crypto, each with 1 transaction
@@ -132,18 +141,18 @@ describe("Test transactions system", () => {
 
     it("creates 2 transactions buy & sell", async () => {
       // Send BUY transaction
-      await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       // Send SELL transaction with same amount (so the total is 0)
-      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
     });
 
     it("throws error when the balance is insufficient", async () => {
       const preciseQuantity = "0.0000000000000000000001";
       const preciseQuantityBigger = "0.00000000000000000000011";
       // Create BUY transaction
-      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
       // Create SELL transaction with 0.00000000000000000000001 more (should fail as the balance can't be negative, you can't sell more than you have)
-      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, isBuy: false }).expect(422);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, isBuy: false }).expect(422);
     });
   });
 
@@ -152,15 +161,15 @@ describe("Test transactions system", () => {
 
     it("creates and updates a transaction (same crypto)", async () => {
       // Create transaction
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       let { id } = res.body;
       // Update transaction
-      res = await request(app).put("/").set("Cookie", jwt).send({ id, ...newTransactionData }).expect(200);
+      res = await req.put("/").set("Cookie", jwt).send({ id, ...newTransactionData }).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, newId: expect.any(String) }));
       id = res.body.newId;
 
       // Get transaction
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       const data = res.body;
       expect(Object.keys(data.transactions).length).toBe(1);
       expect(data.transactions[transactionData.crypto].length).toBe(1);
@@ -177,15 +186,15 @@ describe("Test transactions system", () => {
       const newTransactionData = { ...transactionData, quantity: "12", price: "88", crypto: newCrypto };
 
       // Create transaction
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       let { id } = res.body;
       // Update transaction
-      res = await request(app).put("/").set("Cookie", jwt).send({ id, ...newTransactionData }).expect(200);
+      res = await req.put("/").set("Cookie", jwt).send({ id, ...newTransactionData }).expect(200);
       expect(res.body).toEqual(expect.objectContaining({ success: true, newId: expect.any(String) }));
       id = res.body.newId;
 
       // Get transaction
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       let data = res.body;
       expect(Object.keys(data.transactions).length).toBe(1);
       expect(data.transactions[newCrypto].length).toBe(1);
@@ -197,12 +206,12 @@ describe("Test transactions system", () => {
       }));
 
       // Create another transaction with "NEW_CRYPTO"
-      res = await request(app).post("/").set("Cookie", jwt).send(newTransactionData).expect(200);
+      res = await req.post("/").set("Cookie", jwt).send(newTransactionData).expect(200);
       id = res.body.id;
       // Turn it back to the original transactionData
-      res = await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData}).expect(200);
+      res = await req.put("/").set("Cookie", jwt).send({ id, ...transactionData}).expect(200);
       // Expect 2 crypto, each with 1 transaction
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       data = res.body;
 
       expect(Object.keys(data.transactions).length).toBe(2);
@@ -226,37 +235,37 @@ describe("Test transactions system", () => {
     it("throws an error when the parameters are invalid", async () => {
       // Create transaction
       const invalidId = "invalid_id";
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       let { id } = res.body;
 
       // Missing crypto
       let { crypto, ...testData } = newTransactionData;
-      await request(app).put("/").set("Cookie", jwt).send({ id, ...testData }).expect(400);
+      await req.put("/").set("Cookie", jwt).send({ id, ...testData }).expect(400);
       // Missing price
       let { price, ...testData2 } = newTransactionData;
-      await request(app).put("/").set("Cookie", jwt).send({ id, ...testData2 }).expect(400);
+      await req.put("/").set("Cookie", jwt).send({ id, ...testData2 }).expect(400);
       // Missing id
-      await request(app).put("/").set("Cookie", jwt).send(transactionData).expect(400);
+      await req.put("/").set("Cookie", jwt).send(transactionData).expect(400);
       // Invalid quantity
-      await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData, quantity: "-19" }).expect(422);
+      await req.put("/").set("Cookie", jwt).send({ id, ...transactionData, quantity: "-19" }).expect(422);
       // Invalid id
-      await request(app).put("/").set("Cookie", jwt).send({ id: invalidId, ...transactionData }).expect(404);
+      await req.put("/").set("Cookie", jwt).send({ id: invalidId, ...transactionData }).expect(404);
     });
 
     it("updates 2 transactions buy & sell", async () => {
       const newCrypto = "NEW_CRYPTO";
       const preciseQuantity = "0.0000000000000000000001";
       // Send BUY transaction with different crypto
-      let res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
       let { id } = res.body;
       // Switch its crypto
-      await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData, crypto: newCrypto }).expect(200);
+      await req.put("/").set("Cookie", jwt).send({ id, ...transactionData, crypto: newCrypto }).expect(200);
 
       // Create random BUY transaction
-      res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
       id = res.body.id;
       // Switch its crypto and side
-      await request(app).put("/").set("Cookie", jwt).send({ id, ...transactionData, crypto: newCrypto, isBuy: false }).expect(200);
+      await req.put("/").set("Cookie", jwt).send({ id, ...transactionData, crypto: newCrypto, isBuy: false }).expect(200);
     });
 
     it("throws error when the balance is insufficient", async () => {
@@ -264,51 +273,51 @@ describe("Test transactions system", () => {
       const preciseQuantityBigger = "0.00000000000000000000011";
       const newCrypto = "NEW_CRYPTO";
       // Create BUY transaction with NEW CRYPTO
-      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto }).expect(200);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto }).expect(200);
       // Create BUY transaction with different crypto
-      let res = await request(app).post("/").set("Cookie", jwt).send({ ...transactionData }).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send({ ...transactionData }).expect(200);
       let { id } = res.body;
       // Switch quantity, crypto and side (throws error as preciseQuantityBigger > preciseQuantity)
-      await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, crypto: newCrypto, isBuy: false, id }).expect(422);
+      await req.put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, crypto: newCrypto, isBuy: false, id }).expect(422);
       // Switch quantity, crypto and side (doesn't throw error as the quantities are now equal, so the total is 0)
-      await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto, isBuy: false, id }).expect(200);
+      await req.put("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, crypto: newCrypto, isBuy: false, id }).expect(200);
     });
 
     it("throws error when the crypto is switched and the new balance is insufficient", async () => {
       const newCrypto = "NEW_CRYPTO";
       // Create BUY transaction
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       const { id } = res.body;
       // Create SELL transaction
-      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
 
       // Try to modify the original BUY transaction crypto
-      await request(app).put("/").set("Cookie", jwt).send({ ...transactionData, id, crypto: newCrypto }).expect(422);
+      await req.put("/").set("Cookie", jwt).send({ ...transactionData, id, crypto: newCrypto }).expect(422);
     });
   });
 
   describe("Test delete transaction endpoint", () => {
     it("creates and deletes a transaction (and the crypto key)", async () => {
       // Create transaction
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       let { id } = res.body;
 
-      await request(app).delete("/").set("Cookie", jwt).send({ id }).expect(200);
+      await req.delete("/").set("Cookie", jwt).send({ id }).expect(200);
 
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       // Expect 0 transactions, with no crypto
       expect(res.body.transactions).toEqual({});
     });
 
     it("creates and deletes a transaction (but not the crypto key)", async () => {
       // Create 2 transactions
-      let res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
-      res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      let res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       let { id } = res.body;
 
-      await request(app).delete("/").set("Cookie", jwt).send({ id }).expect(200);
+      await req.delete("/").set("Cookie", jwt).send({ id }).expect(200);
 
-      res = await request(app).get("/").set("Cookie", jwt).expect(200);
+      res = await req.get("/").set("Cookie", jwt).expect(200);
       const data = res.body;
       // Expect 1 crypto and 1 transaction
       expect(Object.keys(data.transactions).length).toBe(1);
@@ -324,23 +333,23 @@ describe("Test transactions system", () => {
     it("throws an error when the id is invalid", async () => {
       const fakeId = "FAKE_ID";
       // Return error if there are no transactions
-      await request(app).delete("/").set("Cookie", jwt).send({ id: fakeId }).expect(404);
+      await req.delete("/").set("Cookie", jwt).send({ id: fakeId }).expect(404);
       // Create transaction
-      await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       // Still return error
-      await request(app).delete("/").set("Cookie", jwt).send({ id: fakeId }).expect(404);
+      await req.delete("/").set("Cookie", jwt).send({ id: fakeId }).expect(404);
       // Return error if the id is not provided
-      await request(app).delete("/").set("Cookie", jwt).expect(400);
+      await req.delete("/").set("Cookie", jwt).expect(400);
     });
 
     it("throws an error when the removed transaction leads to a negative balance", async () => {
       // Create BUY transaction
-      const res = await request(app).post("/").set("Cookie", jwt).send(transactionData).expect(200);
+      const res = await req.post("/").set("Cookie", jwt).send(transactionData).expect(200);
       const { id } = res.body;
       // Create SELL transaction
-      await request(app).post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, isBuy: false }).expect(200);
       // Return error when trying to remove the BUY transaction
-      await request(app).delete("/").set("Cookie", jwt).send({ id }).expect(422);
+      await req.delete("/").set("Cookie", jwt).send({ id }).expect(422);
     });
   });
 });

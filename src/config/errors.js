@@ -12,4 +12,4 @@ export const SERVER_ERROR = { message: "Server error", status: 500 };
 
 // Transactions errors
 export const TRANSACTION_NOT_FOUND = { message: "Invalid transaction id", status: 404 };
-export const TRANSACTION_INVALID = { message: "Insufficient balance", status: 422 };
+export const TRANSACTION_INVALID = { message: "Insufficient balance. Please update or delete other transactions.", status: 422 };

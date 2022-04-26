@@ -1,6 +1,11 @@
 name: Automatic Tests
 
-on: [push, pull_request]
+on: 
+  push:
+    branches: [ main ]
+
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
@@ -12,12 +17,9 @@ jobs:
       with:
         node-version: 14
         cache: 'npm'
+
     - run: npm ci
     - run: npm run test
       env:
         JWT_KEY: ${{ secrets.JWT_KEY }}
-        MONGO_URI: ${{ secrets.MONGO_TEST_URI }}
-        MONGO_TEST_URI: ${{ secrets.MONGO_TEST_URI }}
         COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
-        NODE_ENV: test
-        NODE_OPTIONS: --experimental-vm-modules
