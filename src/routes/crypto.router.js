@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import express from "express";
 import isFileValid from "../helpers/isFileValid.helper.js";
-import fs from "fs";
+import { promises as fs } from "fs";
 import { BINANCE_BASE_URL, COINMARKETCAP_BASE_URL, COINMARKETCAP_API_KEY, COINMARKETCAP_LIMIT, CRYTPO_INFO_FILE } from "../config/config.js";
 import { BINANCE_ERROR } from "../config/errors.js";
 
@@ -21,7 +21,7 @@ router.get("/binance/*", async (req, res, next) => {
 // For a maximum amount of 1 day (as set in the config file).
 router.get("/info", async (req, res, next) => {
   // Check if the info have already been cached
-  if (isFileValid()) return res.json(JSON.parse(fs.readFileSync(CRYTPO_INFO_FILE)));
+  if (await isFileValid()) return res.json(JSON.parse(await fs.readFile(CRYTPO_INFO_FILE)));
   // Send request to coinmarketcap API
   const response = await fetch(`${COINMARKETCAP_BASE_URL}listings/latest?limit=${COINMARKETCAP_LIMIT}`, {
     headers: {
@@ -44,9 +44,11 @@ router.get("/info", async (req, res, next) => {
   };
 
   // Cache file
-  fs.writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret), err => {
-    if (err) console.log(err);
-  });
+  try {
+    fs.writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret));
+  } catch(e) {
+    console.log(e);
+  }
 
   res.json(ret);
 });

@@ -2,7 +2,7 @@ import app from "../config/app.js";
 import request from "supertest";
 import cryptoRouter from "../routes/crypto.router.js";
 import { CRYTPO_INFO_FILE } from "../config/config.js";
-import fs from "fs";
+import { promises as fs } from "fs";
 import { jest } from "@jest/globals";
 
 app.use("/", cryptoRouter);
@@ -34,15 +34,15 @@ describe("Test crypto router", () => {
   });
 
   describe("Test coinmarketcap middleware", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       // Delete the cached file
       try {
-        fs.unlinkSync(CRYTPO_INFO_FILE);
+        await fs.unlink(CRYTPO_INFO_FILE);
       } catch {};
     });
 
-    afterAll(() => {
-      fs.unlinkSync(CRYTPO_INFO_FILE);
+    afterAll(async () => {
+      await fs.unlink(CRYTPO_INFO_FILE);
     });
 
     it("fetches data from coinmarketcap", async () => {
@@ -58,33 +58,33 @@ describe("Test crypto router", () => {
 
     it("fetches data from coinmarketcap and caches it", async () => {
       // Monitor the readFileSync function
-      jest.spyOn(fs, "readFileSync");
+      jest.spyOn(fs, "readFile");
 
       await req.get("/info").expect(200);
       // The first time it shouldn't have been called (due to the beforeEach hook)
-      expect(fs.readFileSync).not.toHaveBeenCalled();
+      expect(fs.readFile).not.toHaveBeenCalled();
 
       await req.get("/info").expect(200);
       // The second time it should have been called
-      expect(fs.readFileSync).toHaveBeenCalled();
+      expect(fs.readFile).toHaveBeenCalled();
     });
 
     it("doesn't fetch data from the cached file if it's outdated", async () => {
       // Create cache file
       await req.get("/info").expect(200);
       // Reset calls counter
-      fs.readFileSync.mockClear();
+      fs.readFile.mockClear();
 
-      // Temporary swap the statSync function to a mock function that returns 0 as the created file time
-      const realFunc = fs.statSync;
-      fs.statSync = () => ({ birthtimeMs: 0 });
+      // Temporary swap the stat function to a mock function that returns 0 as the created file time
+      const realFunc = fs.stat;
+      fs.stat = () => ({ mtimeMs: 0 });
 
       await req.get("/info").expect(200);
       // It shouldn't call the readFileSync as the cached file should be regarded as outdated (dates back to 1970!!)
-      expect(fs.readFileSync).not.toHaveBeenCalled();
+      expect(fs.readFile).not.toHaveBeenCalled();
 
       // Give back the original function
-      fs.statSync = realFunc;
+      fs.stat = realFunc;
     });
   });
 });
