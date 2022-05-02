@@ -6,6 +6,8 @@ export const PORT = 3000;
 
 export const JWT_KEY = process.env.JWT_KEY || "TEST_KEY";
 export const MONGO_URI = process.env.MONGO_URI;
+// Amount of seconds a user will live on the database without validating their email
+export const USER_EXPIRE_TIME = 86400; 
 
 export const EMAIL_SETTINGS = JSON.parse(process.env.EMAIL_SETTINGS?.replace(/'/g, '"'));
 export const EMAIL = {
