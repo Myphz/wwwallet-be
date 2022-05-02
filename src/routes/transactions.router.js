@@ -55,12 +55,15 @@ router.post("/", validateParams(validator), authMiddleware, (req, res, next) => 
     transactions[crypto] = [{ crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) }];
   };
 
-  // Check if the total quantity is positive
-  const total = transactions[crypto].reduce(
-    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
-    new Big(0)
-  );
-  if (total.s === -1) return next(TRANSACTION_INVALID);
+  // Check that the quantity is not negative at any point in time
+  let total = new Big(0);
+  // Sort transactions in ascending order by timestamp (oldest first)
+  for (const { quantity, isBuy } of transactions[crypto].sort((trans1, trans2) => trans1.date - trans2.date)) {
+    if (isBuy) total = total.plus(quantity);
+    else total = total.minus(quantity);
+
+    if (total.s === -1) return next(TRANSACTION_INVALID);
+  }
 
   req.user.transactions = transactions;
   req.user.save(err => {
@@ -97,19 +100,24 @@ router.put("/", validateParams({ id: { type: String }, ...validator }), authMidd
     transactions[crypto][i] = { crypto, base, isBuy, price, quantity, date, ...(notes && { notes }) };
   };
 
-  // Check if the total quantity is positive (of both cryptos!)
-  let total = transactions[crypto].reduce(
-    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
-    new Big(0)
-  );
-  if (total.s === -1) return next(TRANSACTION_INVALID);
+  // Check that the quantity is not negative at any point in time
+  let total = new Big(0);
+  // Sort transactions in ascending order by timestamp (oldest first)
+  for (const { quantity, isBuy } of transactions[crypto].sort((trans1, trans2) => trans1.date - trans2.date)) {
+    if (isBuy) total = total.plus(quantity);
+    else total = total.minus(quantity);
+
+    if (total.s === -1) return next(TRANSACTION_INVALID);
+  }
   
   // The replaceCrypto transactions might be missing
-  total = (transactions[replaceCrypto] || []).reduce(
-    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
-    new Big(0)
-  );
-  if (total.s === -1) return next(TRANSACTION_INVALID);
+  total = new Big(0);
+  for (const { quantity, isBuy } of (transactions[replaceCrypto] || []).sort((trans1, trans2) => trans1.date - trans2.date)) {
+    if (isBuy) total = total.plus(quantity);
+    else total = total.minus(quantity);
+
+    if (total.s === -1) return next(TRANSACTION_INVALID);
+  }
 
   req.user.transactions = transactions;
   req.user.save(err => {
@@ -133,12 +141,15 @@ router.delete("/", validateParams({ id: { type: String } }), authMiddleware, (re
 
   // Remove the transaction at the specific index
   transactions[replaceCrypto].splice(i, 1);
-  // Check if the balance is positive
-  const total = transactions[replaceCrypto].reduce(
-    (prev, curr) => curr.isBuy ? prev.plus(curr.quantity) : prev.minus(curr.quantity), 
-    new Big(0)
-  );
-  if (total.s === -1) return next(TRANSACTION_INVALID);
+  // Check that the quantity is not negative at any point in time
+  let total = new Big(0);
+  // Sort transactions in ascending order by timestamp (oldest first)
+  for (const { quantity, isBuy } of transactions[replaceCrypto].sort((trans1, trans2) => trans1.date - trans2.date)) {
+    if (isBuy) total = total.plus(quantity);
+    else total = total.minus(quantity);
+
+    if (total.s === -1) return next(TRANSACTION_INVALID);
+  }
   // Delete the key if there are no transactions
   if (transactions[replaceCrypto].length === 0) delete transactions[replaceCrypto];
 

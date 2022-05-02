@@ -154,6 +154,14 @@ describe("Test transactions system", () => {
       // Create SELL transaction with 0.00000000000000000000001 more (should fail as the balance can't be negative, you can't sell more than you have)
       await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantityBigger, isBuy: false }).expect(422);
     });
+
+    it("throws error when the balance is insufficient in the past", async () => {
+      const preciseQuantity = "0.0000000000000000000001";
+      // Create BUY transaction
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity }).expect(200);
+      // Create SELL transaction with a timestamp < the buy transaction (should fail as the balance can't be negative in the past, you can't sell more than you have)
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, isBuy: false, date: 1 }).expect(422);
+    });
   });
 
   describe("Test update transaction endpoint", () => {
