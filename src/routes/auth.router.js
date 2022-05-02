@@ -2,10 +2,11 @@ import express from "express";
 import User from "../models/user.js";
 import issueJWT from "../helpers/issueJWT.helper.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import { COOKIE_OPTS } from "../config/config.js";
+import { COOKIE_OPTS, BASE_URL, EMAIL } from "../config/config.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } from "../config/errors.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
+import sendMail from "../helpers/sendMail.helper.js";
 
 const router = express.Router();
 
@@ -29,8 +30,10 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 	user.save((err, user) => {
     // If an error has occurred, the email is already registered
 		if (err) return next(EMAIL_REGISTERED_ERROR);
-    // Set jwt token and return success
-		res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+    // Save the jwt token and send verification email with the jwt token
+		const jwt = issueJWT(user);
+    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` })
+    // Return success
 		res.json({ success: true });
 	});
 });
