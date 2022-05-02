@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "jest": "^28.0.3",
-    "supertest": "^6.2.2"
+    "supertest": "^6.2.3"
   },
   "scripts": {
     "test": "MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-5.0.3.tgz NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
