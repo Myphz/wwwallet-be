@@ -36,7 +36,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 });
 
 // Login endpoint
-router.post("/login", validateParams(validator), (req, res, next) => {
+router.post("/login", validateParams(validator, CREDENTIALS_ERROR), (req, res, next) => {
   // If any field is missing, return error
 	const { email, password } = req.body;
 	User.checkLogin(email, password)

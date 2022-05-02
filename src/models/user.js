@@ -51,7 +51,7 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Delete user if it's not been registered after USER_EXPIRE_TIME seconds
+// Delete user if it's not been verified after USER_EXPIRE_TIME seconds
 UserSchema.index({ createdAt: 1 }, { expireAfterSeconds: USER_EXPIRE_TIME, partialFilterExpression: { isVerified: false } });
 
 // Middleware that gets called before a user is saved to hash the password
