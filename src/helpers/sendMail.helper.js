@@ -19,7 +19,11 @@ export default async function sendEmail(template, to, from, subject, params) {
 
   options.html = await renderTemplate(template, params);
 
-  await transport.sendMail(options);
+  try {
+    await transport.sendMail(options);
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 // Parse HTML file with the requested parameters

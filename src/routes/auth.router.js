@@ -23,8 +23,20 @@ const validator = {
 };
 
 // Register endpoint
+// This method can be called with the request parameter "resend" to just resend the email, without
+// creating a new user.
 router.post("/register", validateParams(validator), (req, res, next) => {
-	const { email, password } = req.body;
+	const { email, password, resend } = req.body;
+  if (resend) {
+    User.findOne({ email }, { _id: 1 }, (err, user) => {
+      if (err || !user) return next(CREDENTIALS_ERROR);
+		  const jwt = issueJWT(user);
+      sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
+      // Return success
+      return res.json({ success: true });
+    });
+  };
+  
   // Create new user and try to save it
 	const user = new User({ email, password });
 	user.save((err, user) => {
@@ -32,7 +44,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 		if (err) return next(EMAIL_REGISTERED_ERROR);
     // Save the jwt token and send verification email with the jwt token
 		const jwt = issueJWT(user);
-    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` })
+    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
     // Return success
 		res.json({ success: true });
 	});
