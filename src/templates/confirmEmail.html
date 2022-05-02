@@ -73,16 +73,16 @@
             </h1>
           </div>
           <div id="content">
-            <p>Hello {{ name }},</p>
+            <p>Welcome,</p>
             <p>To get started with <span class="font-logo">wwwallet</span>, please confirm your email by clicking the button below:</p>
-            <a href="http://google.com" target="_blank" class="button">CONFIRM EMAIL</a>
+            <a href="{{ codeLink }}" target="_blank" class="button">CONFIRM EMAIL</a>
             <p>If the above button doesn't work, try to manually copy and paste this link:</p>
-            <a href="http://google.com" target="_blank" align="center">https://unlayer.com/templates/email-verification</a>
+            <a href="{{ codeLink }}" target="_blank" align="center">{{ codeLink }}</a>
             <p>If you did not make this request, feel free to ignore this email.</p>
           </div>
           <div id="footer" align="center">
             <span style="font-weight: bold">Contact us at:</span>
-            <a href="http://google.com">contact@wwwallet.app</a>
+            <a href="mailto:{{ contactEmail }}">{{ contactEmail }}</a>
             <span style="color: rgba(220, 236, 255, 0.55);"><span class="font-logo">wwwallet</span> - Managing your crypto has never been this easy</span>
           </div>
         </td>
