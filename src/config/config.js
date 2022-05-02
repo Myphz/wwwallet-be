@@ -4,8 +4,15 @@ config();
 
 export const PORT = 3000;
 
-export const JWT_KEY = process.env.JWT_KEY;
+export const JWT_KEY = process.env.JWT_KEY || "TEST_KEY";
 export const MONGO_URI = process.env.MONGO_URI;
+
+export const EMAIL_SETTINGS = JSON.parse(process.env.EMAIL_SETTINGS?.replace(/'/g, '"'));
+export const EMAIL = {
+  noreply: "no-reply@wwwallet.app",
+  contact: "contact@wwwallet.app"
+};
+
 export const COOKIE_OPTS = {
   secure: true,
   httpOnly: true,
@@ -21,4 +28,6 @@ export const COINMARKETCAP_LIMIT =  process.env.NODE_ENV === "test" ? 1 : 5000; 
 
 export const CRYTPO_INFO_FILE = "src/data/cryptoInfo.json";
 // Amount of milliseconds the CRYPTO_INFO_FILE is valid for (1 day). If the file is older than that, it will be refreshed.
-export const CRYPTO_INFO_REFRESH_TIME = 86400000 
+export const CRYPTO_INFO_REFRESH_TIME = 86400000;
+
+export const TEMPLATES_PATH = "src/templates/";
