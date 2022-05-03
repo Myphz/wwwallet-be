@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import { SALT_ROUNDS } from "../config/config.js";
+import { SALT_ROUNDS, USER_EXPIRE_TIME } from "../config/config.js";
 import Transaction from "./transaction.js";
 import { getTransactions } from "../helpers/transaction.helper.js";
 
@@ -43,8 +43,16 @@ const UserSchema = new mongoose.Schema({
     of: [Transaction],
     default: new Map(),
     get: getTransactions,
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 });
+
+// Delete user if it's not been verified after USER_EXPIRE_TIME seconds
+UserSchema.index({ createdAt: 1 }, { expireAfterSeconds: USER_EXPIRE_TIME, partialFilterExpression: { isVerified: false } });
 
 // Middleware that gets called before a user is saved to hash the password
 UserSchema.pre("save", async function(next) {
@@ -61,7 +69,8 @@ UserSchema.pre("save", async function(next) {
 // Helper function that checks login password credentials
 UserSchema.statics.checkLogin = function(email, password) {
   return new Promise((resolve, reject) => {
-    this.findOne( { email }, { _id: 1, password: 1 }, async (err, user) => {
+    // Find verified accounts with the specified email
+    this.findOne( { email }, { _id: 1, password: 1, isVerified: 1 }, async (err, user) => {
       if (err || !user) 
         reject({ login: false, user: null });
       else

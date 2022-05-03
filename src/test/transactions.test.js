@@ -2,13 +2,12 @@ import app from "../config/app.js";
 import request from "supertest";
 import mongoose from "mongoose";
 import User from "../models/user";
-import authRouter from "../routes/auth.router.js";
 import transactionsRouter from "../routes/transactions.router.js";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { issueJWT } from "../helpers/jwt.helper.js";
 
 let mongoServer;
 app.use("/", transactionsRouter);
-app.use("/auth", authRouter);
 const req = request(app);
 
 beforeAll(async () => {
@@ -31,8 +30,8 @@ describe("Test transactions system", () => {
   beforeEach(async () => {
     await User.deleteMany({});
     // Save the user and get jwt token
-    const res = await req.post("/auth/register").send({ email, password });
-    jwt = res.headers["set-cookie"][0];
+    const user = await new User({ email, password, isVerified: true }).save()
+    jwt = `jwt=${issueJWT(user)};`;
   });
 
   describe("Test create & get transaction endpoint", () => {

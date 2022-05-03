@@ -12,13 +12,13 @@ import { INVALID_PARAMETERS, MISSING_PARAMETERS } from "../config/errors.js";
 //   secondParam: { ... }
 // }
 
-export default function(params) {
+export default function(params, error) {
   return function(req, res, next) {
-    if (!req.body) return next(MISSING_PARAMETERS);
+    if (!req.body) return next(error || MISSING_PARAMETERS);
 
     for (const [param, { type, validator }] of Object.entries(params)) {
-      if (typeof req.body[param] === "undefined") return next(MISSING_PARAMETERS);
-      if (req.body[param].constructor !== type || (validator && !validator(req.body[param]))) return next(INVALID_PARAMETERS);
+      if (typeof req.body[param] === "undefined") return next(error || MISSING_PARAMETERS);
+      if (req.body[param].constructor !== type || (validator && !validator(req.body[param]))) return next(error || INVALID_PARAMETERS);
     };
 
     next();
