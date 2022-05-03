@@ -72,6 +72,26 @@ describe("Test authentication system", () => {
       res = await req.post("/register").send({ email: invalidEmail, password: invalidPassword });
       expect(res.status).toBe(422);
     });
+
+    it("resends the email", async () => {
+      await req.post("/register").send({ email, password }).expect(200);
+      const res = await req.post("/register").send({ email, password, resend: true }).expect(200);
+      expect(res.status).toBe(200);
+      // Expect the headers not to contain any jwt cookie as the user is not verified
+      expect(res.headers).not.toHaveProperty("set-cookie");
+    });
+
+    it("throws an error if trying to resend the email with invalid email", async () => {
+      const fakeEmail = "fak@email.com";
+      await req.post("/register").send({ email, password }).expect(200);
+      await req.post("/register").send({ email: fakeEmail, password, resend: true }).expect(401);
+    });
+
+    it("throws an error if trying to resend the email with an already verified account", async () => {
+      // Manually create verified account
+      await new User({ email, password, isVerified: true }).save();
+      await req.post("/register").send({ email, password, resend: true }).expect(401);
+    });
   });
 
   describe("Test register verify email endpoint", () => {

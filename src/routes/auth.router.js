@@ -28,7 +28,8 @@ const validator = {
 router.post("/register", validateParams(validator), (req, res, next) => {
 	const { email, password, resend } = req.body;
   if (resend) {
-    User.findOne({ email }, { _id: 1 }, (err, user) => {
+    // Don't create a new user, just verify that the user exists, create the jwt token and send the email
+    return User.findOne({ email, isVerified: false }, { _id: 1 }, (err, user) => {
       if (err || !user) return next(CREDENTIALS_ERROR);
 		  const jwt = issueJWT(user);
       sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
