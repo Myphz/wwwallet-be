@@ -30,8 +30,8 @@ describe("Test transactions system", () => {
   beforeEach(async () => {
     await User.deleteMany({});
     // Save the user and get jwt token
-    const user = await new User({ email, password }).save()
-    jwt = `jwt=${issueJWT(user)}; Path=/; HttpOnly; Secure`;
+    const user = await new User({ email, password, isVerified: true }).save()
+    jwt = `jwt=${issueJWT(user)};`;
   });
 
   describe("Test create & get transaction endpoint", () => {
