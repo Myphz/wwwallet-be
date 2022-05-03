@@ -35,7 +35,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
       // Return success
       return res.json({ success: true });
     });
-  };P
+  };
   
   // Create new user and try to save it
 	const user = new User({ email, password });
@@ -51,12 +51,13 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 });
 
 // Confirm email endpoint
-router.get("/register", (req, res, next) => {
-  const jwt = decodeJWT(req.query.jwt);
-  User.findOne({ _id: jwt.sub, isVerified: false }, (err, user) => {
+router.post("/register/verify", validateParams({ jwt: { type: String } }), (req, res, next) => {
+  const jwt = decodeJWT(req.body.jwt);
+  // Find and update the user
+  User.findOneAndUpdate({ _id: jwt.sub, isVerified: false }, { isVerified: true }, (err, user) => {
+    // If an error occured, the jwt cookie is not valid (i.e, the account has been deleted as more than 24 hours have passed or the jwt is invalid)
     if (err || !user) return next(EXPIRED_LINK);
     res.cookie("jwt", req.jwt, COOKIE_OPTS);
-    // Return success page...
     res.json({ success: true });
   });
 });
