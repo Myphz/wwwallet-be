@@ -70,7 +70,7 @@ UserSchema.pre("save", async function(next) {
 UserSchema.statics.checkLogin = function(email, password) {
   return new Promise((resolve, reject) => {
     // Find verified accounts with the specified email
-    this.findOne( { email, isVerified: true }, { _id: 1, password: 1 }, async (err, user) => {
+    this.findOne( { email }, { _id: 1, password: 1, isVerified: 1 }, async (err, user) => {
       if (err || !user) 
         reject({ login: false, user: null });
       else

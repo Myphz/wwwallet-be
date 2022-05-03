@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import User from "../models/user";
 import transactionsRouter from "../routes/transactions.router.js";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import issueJWT from "../helpers/issueJWT.helper.js";
+import { issueJWT } from "../helpers/jwt.helper.js";
 
 let mongoServer;
 app.use("/", transactionsRouter);

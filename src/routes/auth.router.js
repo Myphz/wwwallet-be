@@ -1,6 +1,6 @@
 import express from "express";
 import User from "../models/user.js";
-import issueJWT from "../helpers/issueJWT.helper.js";
+import { issueJWT, decodeJWT } from "../helpers/jwt.helper.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { COOKIE_OPTS, BASE_URL, EMAIL } from "../config/config.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
@@ -35,7 +35,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
       // Return success
       return res.json({ success: true });
     });
-  };
+  };P
   
   // Create new user and try to save it
 	const user = new User({ email, password });
@@ -50,6 +50,17 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 	});
 });
 
+// Confirm email endpoint
+router.get("/register", (req, res, next) => {
+  const jwt = decodeJWT(req.query.jwt);
+  User.findOne({ _id: jwt.sub, isVerified: false }, (err, user) => {
+    if (err || !user) return next(EXPIRED_LINK);
+    res.cookie("jwt", req.jwt, COOKIE_OPTS);
+    // Return success page...
+    res.json({ success: true });
+  });
+});
+
 // Login endpoint
 router.post("/login", validateParams(validator, CREDENTIALS_ERROR), (req, res, next) => {
   // If any field is missing, return error
@@ -60,7 +71,7 @@ router.post("/login", validateParams(validator, CREDENTIALS_ERROR), (req, res, n
 			if (!login) return next(CREDENTIALS_ERROR);
       // If the password match, issue the jwt token and return success
 			res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
-			res.json({ success: true });
+			res.json({ success: true, isVerified: user.isVerified });
 		})
     // If an error occured, the email isn't registered
 		.catch(_ => {
