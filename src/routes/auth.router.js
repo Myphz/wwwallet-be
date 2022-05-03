@@ -4,7 +4,7 @@ import { issueJWT, decodeJWT } from "../helpers/jwt.helper.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { COOKIE_OPTS, BASE_URL, EMAIL } from "../config/config.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
-import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR } from "../config/errors.js";
+import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR, EXPIRED_LINK } from "../config/errors.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
 
