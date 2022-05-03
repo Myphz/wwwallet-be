@@ -28,12 +28,19 @@ export default async function sendEmail(template, to, from, subject, params) {
 
 // Parse HTML file with the requested parameters
 async function renderTemplate(template, params) {
+  // Load layout and replace contactEmail
+  let layout = await fs.readFile(`${TEMPLATES_PATH}layout.html`, { encoding: "utf-8" });
+  layout = layout.replace(/{{ contactEmail }}/g, EMAIL.contact);
+  // Load the requsted HTML template
   let file = await fs.readFile(`${TEMPLATES_PATH}${template}.html`, { encoding: "utf-8" });
-  // Replace every {{ key }} in the HTML file with the corresponding value
-  for (const [key, value] of Object.entries({ contactEmail: EMAIL.contact, ...params })) {
+  // Replace every {{ key }} in the HTML template with the corresponding value
+  for (const [key, value] of Object.entries(params)) {
     const regex = new RegExp(`{{ ${key} }}`, "g");
     file = file.replace(regex, value);
-  }
+  };
+
+  // Substitute {{ body }} in layout with the requested template
+  file = layout.replace("{{ body }}", file);
 
   return file;
 };

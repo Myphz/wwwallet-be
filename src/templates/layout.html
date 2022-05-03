@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rambla:ital,wght@1,700&display=swap" rel="stylesheet">
+    <style>
+      #container {
+        background-color: #001C3D;
+        font-family: "Poppins", sans-serif;
+        border-radius: 2em;
+        padding-bottom: 2em;
+        color: #DCECFF;
+        font-size: 1.25rem;
+      }
+
+      #logo {
+        padding: 1em;
+        border-bottom: 1px solid rgba(220, 236, 255, 0.4);
+      }
+
+      .font-logo {
+        font-family: 'Rambla', Helvetica;
+        font-weight: bold;
+        font-style: italic;
+      }
+
+      h1 {
+        margin: 0;
+        padding: 0;
+        font-size: 2.75rem;
+      }
+
+      #content {
+        padding: 1em;
+        text-align: left;
+      }
+
+      .button {
+        padding: 0;
+        border: none;
+        outline: none;
+        font-size: 1.75rem;
+        font-weight: bold;
+        display: block;
+        margin: 1.5em auto;
+        color: #DCECFF !important;
+        padding: .5em 2em;
+        text-align: center;
+        background-color: #234A75;
+        border-radius: .25em;
+        text-decoration: none;
+        width: fit-content;
+      }
+
+      #footer {
+        font-size: 1rem;
+      }
+
+    </style>
+  </head>
+  <body>
+    <table cellpadding="0" align="center" cellspacing="0" width="100%" style="max-width: 680px">
+      <tr>
+        <td align="center" id="container">
+          <div id="logo" class="font-logo">
+            <h1>
+              <img style="vertical-align: middle;" src="cid:logo">
+              wwwallet
+            </h1>
+          </div>
+          <div id="content">
+            {{ body }}
+          </div>
+          <div id="footer" align="center">
+            <span style="font-weight: bold">Contact us at:</span><br>
+            <a href="mailto:{{ contactEmail }}">{{ contactEmail }}</a><br><br>
+            <span style="color: rgba(220, 236, 255, 0.55);"><span class="font-logo">wwwallet</span><br>Managing your crypto has never been this easy</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
