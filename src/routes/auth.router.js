@@ -53,11 +53,13 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 // Confirm email endpoint
 router.post("/register/verify", validateParams({ jwt: { type: String } }), (req, res, next) => {
   const jwt = decodeJWT(req.body.jwt);
+  // Throw error if the jwt is invalid
+  if (!jwt) return next(CREDENTIALS_ERROR);
   // Find and update the user
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: false }, { isVerified: true }, (err, user) => {
     // If an error occured, the jwt cookie is not valid (i.e, the account has been deleted as more than 24 hours have passed or the jwt is invalid)
     if (err || !user) return next(EXPIRED_LINK);
-    res.cookie("jwt", req.jwt, COOKIE_OPTS);
+    res.cookie("jwt", req.body.jwt, COOKIE_OPTS);
     res.json({ success: true });
   });
 });
@@ -70,8 +72,9 @@ router.post("/login", validateParams(validator, CREDENTIALS_ERROR), (req, res, n
     // If the email has been found, check if the password match with the login parameter
 		.then(({ login, user }) => {
 			if (!login) return next(CREDENTIALS_ERROR);
-      // If the password match, issue the jwt token and return success
-			res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+      // If the password match and the user is verified, issue the jwt token
+			if (user.isVerified) res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+      // Return success and isVerified property
 			res.json({ success: true, isVerified: user.isVerified });
 		})
     // If an error occured, the email isn't registered

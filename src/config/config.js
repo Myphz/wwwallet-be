@@ -10,7 +10,7 @@ export const MONGO_URI = process.env.MONGO_URI;
 // Amount of seconds a user will live on the database without validating their email
 export const USER_EXPIRE_TIME = 86400; 
 
-export const EMAIL_SETTINGS = JSON.parse(process.env.EMAIL_SETTINGS || "{}");
+export const EMAIL_SETTINGS = process.env.NODE_ENV === "test" ? {} : JSON.parse(process.env.EMAIL_SETTINGS || "{}");
 export const EMAIL = {
   noreply: "no-reply@wwwallet.app",
   contact: "contact@wwwallet.app"

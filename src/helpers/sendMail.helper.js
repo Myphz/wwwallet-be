@@ -22,6 +22,8 @@ export default async function sendEmail(template, to, from, subject, params) {
   try {
     await transport.sendMail(options);
   } catch (err) {
+    // Ignore errors if testing
+    if (process.env.NODE_ENV === "test") return;
     console.log(err);
   }
 };

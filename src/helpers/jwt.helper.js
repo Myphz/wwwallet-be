@@ -12,7 +12,7 @@ export function issueJWT(user) {
 
 export function decodeJWT(jwtToken) {
   if (!jwtToken) return;
-  jwt.verify(jwtToken, JWT_KEY, (err, decoded) => {
+  return jwt.verify(jwtToken, JWT_KEY, (err, decoded) => {
     if (err) return;
     return decoded;
   });
