@@ -6,7 +6,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
-import { CREDENTIALS_ERROR, EXPIRED_LINK } from "../config/errors.js";
+import { EXPIRED_LINK } from "../config/errors.js";
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ const validator = {
 };
 
 // POST - Sends email
-// PUT/DELETE - Modified / Delete account
+// PUT/DELETE - Modify / Delete account
 
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {
@@ -46,23 +46,39 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
 
 // Send email to modify account
 router.post("/modify", authMiddleware, (req, res, next) => {
-  const jwt = issueJWT(req.user, { modify: true }, { expiresIn: "1d" });
+  // Store email in JWT to retrieve it later
+  const jwt = issueJWT(req.user, { modify: true, email: req.body.email }, { expiresIn: "1d" });
   // Send email either to the current email or to the email received as optional parameter
   sendMail("modifyAccount", req.body.email || req.user.email, EMAIL.noreply, "Modify account request", { codeLink: `${BASE_URL}account/modify?jwt=${jwt}` });
   res.json({ success: true });
 });
 
 // Update account
-router.put("/modify", validateParams(validator, { checkAll: false }), (req, res, next) => {
+router.put("/modify", (req, res, next) => {
   const jwt = decodeJWT(req.body.jwt);
   if (!jwt || !jwt.modify) return next(EXPIRED_LINK);
 
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const { email } = jwt;
 
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { ...(email && { email }), ...(password && { password }) }, (err, user) => {
     if (err || !user) return next(EXPIRED_LINK);
     res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
     res.json({ success: true, msg: "Account updated successfully" });
+  });
+});
+
+// Delete all transactions
+router.delete("/delete/transactions", authMiddleware, (req, res, next) => {
+  req.user.transactions = [];
+  req.user.save(err => {
+    if (err) {
+      console.log(err);
+      // This should never fail, so send a generic 500 response
+      return next(SERVER_ERROR);
+    };
+
+    res.json({ success: true, msg: "All transactions deleted successfully" });
   });
 });
 
