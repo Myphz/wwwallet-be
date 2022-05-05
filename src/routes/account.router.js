@@ -47,8 +47,29 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
 // Send email to modify account
 router.post("/modify", authMiddleware, (req, res, next) => {
   const jwt = issueJWT(req.user, { modify: true }, { expiresIn: "1d" });
-  sendMail("modifyAccount", req.user.email, EMAIL.noreply, "Modify account request", { codeLink: `${BASE_URL}account/modify?jwt=${jwt}` });
+  // Send email either to the current email or to the email received as optional parameter
+  sendMail("modifyAccount", req.body.email || req.user.email, EMAIL.noreply, "Modify account request", { codeLink: `${BASE_URL}account/modify?jwt=${jwt}` });
   res.json({ success: true });
+});
+
+// Update account
+router.put("/modify", validateParams(validator, { checkAll: false }), (req, res, next) => {
+  const jwt = decodeJWT(req.body.jwt);
+  if (!jwt || !jwt.modify) return next(EXPIRED_LINK);
+
+  const { email, password } = req.body;
+  if (email) req.user.email = email;
+  if (password) req.user.password = password;
+
+  req.user.save(err => {
+    if (err) {
+      console.log(err);
+      // This should never fail, so send a generic 500 response
+      return next(SERVER_ERROR);
+    };
+
+    res.json({ success: true, msg: "Account defails modified successfully" });
+  });
 });
 
 // Error handler function
