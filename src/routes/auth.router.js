@@ -34,7 +34,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
       const jwt = issueJWT(user);
       sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
       // Return success
-      return res.json({ success: true });
+      return res.json({ success: true, msg: "Email sent successfully" });
     })
     // If an error occured, the email isn't registered
     .catch(() => next(CREDENTIALS_ERROR));
@@ -47,7 +47,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
     if (err) return next(EMAIL_REGISTERED_ERROR);
     // Save the jwt token and send verification email with the jwt token
     const jwt = issueJWT(user);
-    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
+    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}register/verify?jwt=${jwt}` });
     // Return success
     res.json({ success: true });
   });
@@ -63,7 +63,7 @@ router.post("/register/verify", validateParams({ jwt: { type: String } }), (req,
     // If an error occured, the jwt cookie is not valid (i.e, the account has been deleted as more than 24 hours have passed or the jwt is invalid)
     if (err || !user) return next(EXPIRED_LINK);
     res.cookie("jwt", req.body.jwt, COOKIE_OPTS);
-    res.json({ success: true });
+    res.json({ success: true, msg: "Email successfully verified" });
   });
 });
 
