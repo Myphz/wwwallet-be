@@ -67,10 +67,10 @@ UserSchema.pre("save", async function(next) {
 });
 
 // Helper function that checks login password credentials
-UserSchema.statics.checkLogin = function(email, password) {
+UserSchema.statics.checkLogin = function(email, password, opts) {
   return new Promise((resolve, reject) => {
     // Find verified accounts with the specified email
-    this.findOne( { email }, { _id: 1, password: 1, isVerified: 1 }, async (err, user) => {
+    this.findOne( { email, ...(opts || {}) }, { _id: 1, password: 1, isVerified: 1 }, async (err, user) => {
       if (err || !user) 
         reject({ login: false, user: null });
       else

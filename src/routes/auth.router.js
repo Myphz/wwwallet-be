@@ -29,13 +29,15 @@ router.post("/register", validateParams(validator), (req, res, next) => {
   const { email, password, resend } = req.body;
   if (resend) {
     // Don't create a new user, just verify that the user exists, create the jwt token and send the email
-    return User.findOne({ email, isVerified: false }, { _id: 1 }, (err, user) => {
-      if (err || !user) return next(CREDENTIALS_ERROR);
+    return User.checkLogin(email, password, { isVerified: false }).then(({ login, user }) => {
+      if (!login) return next(CREDENTIALS_ERROR);
       const jwt = issueJWT(user);
       sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
       // Return success
       return res.json({ success: true });
-    });
+    })
+    // If an error occured, the email isn't registered
+    .catch(() => next(CREDENTIALS_ERROR));
   };
   
   // Create new user and try to save it
@@ -79,9 +81,7 @@ router.post("/login", validateParams(validator, CREDENTIALS_ERROR), (req, res, n
       res.json({ success: true, isVerified: user.isVerified });
     })
     // If an error occured, the email isn't registered
-    .catch(_ => {
-      return next(CREDENTIALS_ERROR);
-    });
+    .catch(() => next(CREDENTIALS_ERROR));
 });
 
 // Logout the user (replace the jwt cookie and return success)

@@ -81,10 +81,17 @@ describe("Test authentication system", () => {
       expect(res.headers).not.toHaveProperty("set-cookie");
     });
 
-    it("throws an error if trying to resend the email with invalid email", async () => {
+    it("throws an error if trying to resend the email with invalid email or password", async () => {
       const fakeEmail = "fak@email.com";
+      const fakePassword = "fakepassword123";
+
       await req.post("/register").send({ email, password }).expect(200);
+      // Wrong email
       await req.post("/register").send({ email: fakeEmail, password, resend: true }).expect(401);
+      // Wrong password
+      await req.post("/register").send({ email, password: fakePassword, resend: true }).expect(401);
+      // Both wrong
+      await req.post("/register").send({ email: fakeEmail, password: fakePassword, resend: true }).expect(401);
     });
 
     it("throws an error if trying to resend the email with an already verified account", async () => {
