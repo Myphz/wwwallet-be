@@ -25,7 +25,7 @@ const validator = {
 
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {
-  const jwt = issueJWT(req.user, { delete: true });
+  const jwt = issueJWT(req.user, { delete: true }, { expiresIn: "1d" });
   sendMail("deleteAccount", req.user.email, EMAIL.noreply, "Delete account request", { codeLink: `${BASE_URL}account/delete?jwt=${jwt}` });
   res.json({ success: true });
 });
@@ -35,7 +35,6 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
   const jwt = decodeJWT(req.query.jwt);
   // Throw error if the jwt is invalid
   if (!jwt) return next(CREDENTIALS_ERROR);
-  console.log(jwt);
 });
 
 // Error handler function
