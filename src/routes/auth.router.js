@@ -68,7 +68,7 @@ router.post("/register/verify", validateParams({ jwt: { type: String } }), (req,
 });
 
 // Login endpoint
-router.post("/login", validateParams(validator, CREDENTIALS_ERROR), (req, res, next) => {
+router.post("/login", validateParams(validator, { error: CREDENTIALS_ERROR }), (req, res, next) => {
   // If any field is missing, return error
   const { email, password } = req.body;
   User.checkLogin(email, password)
