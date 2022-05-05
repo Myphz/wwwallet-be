@@ -1,6 +1,7 @@
 import express from "express";
 import User from "../models/user.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
+import { encrypt, decrypt } from "../helpers/crypto.helper.js";
 import { BASE_URL, COOKIE_OPTS, EMAIL } from "../config/config.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
@@ -35,11 +36,12 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
 // Send email to update account
 router.post("/update", authMiddleware, (req, res, next) => {
   // Check email format
-  if (req.body.email && !validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
-  // Store email in JWT to retrieve it later
-  const jwt = issueJWT(req.user, { update: true, email: req.body.email }, { expiresIn: "1d" });
+  if (typeof req.body?.email === "string" && !validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
+  const { email } = req.body.email || req.user.email;
+  // Temporary store encrypted email in JWT to retrieve it later
+  const jwt = issueJWT(req.user, { update: true, email: encrypt(email) }, { expiresIn: "1d" });
   // Send email either to the current email or to the email received as optional parameter
-  sendMail("updateAccount", req.body.email || req.user.email, EMAIL.noreply, "update account request", { codeLink: `${BASE_URL}account/update?jwt=${jwt}` });
+  sendMail("updateAccount", email, EMAIL.noreply, "update account request", { codeLink: `${BASE_URL}account/update?jwt=${jwt}` });
   res.json({ success: true });
 });
 
@@ -50,12 +52,17 @@ router.put("/update", (req, res, next) => {
 
   const { password } = req.body;
   // Check password format
-  if (password && !validatePassword(password)) return next(INVALID_PARAMETERS);
-  const { email } = jwt;
+  if (typeof password === "string" && !validatePassword(password)) return next(INVALID_PARAMETERS);
+
+  // Try to decrypt email
+  let email;
+  try { email = decrypt(jwt.email) }
+  catch { return next(INVALID_PARAMETERS) };
 
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { ...(email && { email }), ...(password && { password }) }, (err, user) => {
     if (err) return next(EMAIL_REGISTERED_ERROR);
     if (!user) return next(EXPIRED_LINK);
+    // Issue new JWT token
     res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
     res.json({ success: true, msg: "Account updated successfully" });
   });
@@ -77,8 +84,6 @@ router.delete("/delete/transactions", authMiddleware, (req, res, next) => {
 
 // Error handler function
 router.use((err, req, res, next) => {
-  // Set empty jwt token as cookie
-  res.cookie("jwt", "", COOKIE_OPTS);
   res.status(err.status);
   res.json({ success: false, msg: err.message });
 });

@@ -5,6 +5,7 @@ import accountRouter from "../routes/account.router.js";
 import User from "../models/user";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { issueJWT } from "../helpers/jwt.helper.js";
+import { encrypt } from "../helpers/crypto.helper.js";
 
 let mongoServer;
 app.use("/", accountRouter);
@@ -68,7 +69,7 @@ describe("Test account management system", () => {
     it("updates the account's email", async () => {
       const newEmail = "newmail@test.com";
 
-      const jwt = issueJWT(user, { update: true, email: newEmail });
+      const jwt = issueJWT(user, { update: true, email: encrypt(newEmail) });
       await req.put("/update").send({ jwt }).expect(200);
 
       const { login } = await User.checkLogin(newEmail, password);
@@ -79,7 +80,7 @@ describe("Test account management system", () => {
       const newPassword = "newPassword123";
       const newEmail = "newmail@test.com";
 
-      const jwt = issueJWT(user, { update: true, email: newEmail });
+      const jwt = issueJWT(user, { update: true, email: encrypt(newEmail) });
       await req.put("/update").send({ jwt, password: newPassword }).expect(200);
 
       const { login } = await User.checkLogin(newEmail, newPassword);
@@ -106,8 +107,14 @@ describe("Test account management system", () => {
       const user2 = new User({ email: newEmail, password, isVerified: true });
       await user2.save();
       // Expect conflict
-      const jwt = issueJWT(user, { update: true, email: newEmail });
+      const jwt = issueJWT(user, { update: true, email: encrypt(newEmail) });
       await req.put("/update").send({ jwt }).expect(409);
+    });
+
+    it("doesn't update the account if the new email is in the wrong format (not encrypted)", async () => {
+      const newEmail = "newmail@test.com";
+      const jwt = issueJWT(user, { update: true, email: newEmail });
+      await req.put("/update").send({ jwt }).expect(422);
     });
 
     it("doesn't update the account if the user is not verified", async () => {
@@ -117,7 +124,7 @@ describe("Test account management system", () => {
       const user2 = new User({ email: newEmail, password, isVerified: false });
       await user2.save();
 
-      const jwt = issueJWT(user2, { update: true, email: newEmail2 });
+      const jwt = issueJWT(user2, { update: true, email: encrypt(newEmail2) });
       await req.put("/update").send({ jwt }).expect(401);
     });
   });
