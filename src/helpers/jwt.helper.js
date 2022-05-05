@@ -2,12 +2,13 @@ import jwt from "jsonwebtoken";
 import { JWT_KEY } from "../config/config.js";
 
 // Function to sign a jwt token, given the user
-export function issueJWT(user) {
+export function issueJWT(user, fields, opts) {
   const payload = {
-      sub: user._id,
+    sub: user._id,
+    ...(fields || {})
   };
 
-  return jwt.sign(payload, JWT_KEY);
+  return jwt.sign(payload, JWT_KEY, opts || {});
 }
 
 export function decodeJWT(jwtToken) {
