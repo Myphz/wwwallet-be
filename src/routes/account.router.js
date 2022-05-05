@@ -6,21 +6,9 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
-import { EXPIRED_LINK } from "../config/errors.js";
+import { EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR } from "../config/errors.js";
 
 const router = express.Router();
-
-const validator = {
-  email: {
-    type: String,
-    validator: validateEmail
-  },
-
-  password: {
-    type: String,
-    validator: validatePassword
-  }
-};
 
 // POST - Sends email
 // PUT/DELETE - Modify / Delete account
@@ -46,6 +34,8 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
 
 // Send email to modify account
 router.post("/modify", authMiddleware, (req, res, next) => {
+  // Check email format
+  if (req.body.email && !validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
   // Store email in JWT to retrieve it later
   const jwt = issueJWT(req.user, { modify: true, email: req.body.email }, { expiresIn: "1d" });
   // Send email either to the current email or to the email received as optional parameter
@@ -59,6 +49,8 @@ router.put("/modify", (req, res, next) => {
   if (!jwt || !jwt.modify) return next(EXPIRED_LINK);
 
   const { password } = req.body;
+  // Check password format
+  if (password && !validatePassword(password)) return next(INVALID_PARAMETERS);
   const { email } = jwt;
 
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { ...(email && { email }), ...(password && { password }) }, (err, user) => {
