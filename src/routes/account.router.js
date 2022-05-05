@@ -6,12 +6,12 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
-import { EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR } from "../config/errors.js";
+import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR } from "../config/errors.js";
 
 const router = express.Router();
 
 // POST - Sends email
-// PUT/DELETE - Modify / Delete account
+// PUT/DELETE - Update / Delete account
 
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {
@@ -32,21 +32,21 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
   });
 });
 
-// Send email to modify account
-router.post("/modify", authMiddleware, (req, res, next) => {
+// Send email to update account
+router.post("/update", authMiddleware, (req, res, next) => {
   // Check email format
   if (req.body.email && !validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
   // Store email in JWT to retrieve it later
-  const jwt = issueJWT(req.user, { modify: true, email: req.body.email }, { expiresIn: "1d" });
+  const jwt = issueJWT(req.user, { update: true, email: req.body.email }, { expiresIn: "1d" });
   // Send email either to the current email or to the email received as optional parameter
-  sendMail("modifyAccount", req.body.email || req.user.email, EMAIL.noreply, "Modify account request", { codeLink: `${BASE_URL}account/modify?jwt=${jwt}` });
+  sendMail("updateAccount", req.body.email || req.user.email, EMAIL.noreply, "update account request", { codeLink: `${BASE_URL}account/update?jwt=${jwt}` });
   res.json({ success: true });
 });
 
 // Update account
-router.put("/modify", (req, res, next) => {
+router.put("/update", (req, res, next) => {
   const jwt = decodeJWT(req.body.jwt);
-  if (!jwt || !jwt.modify) return next(EXPIRED_LINK);
+  if (!jwt || !jwt.update) return next(EXPIRED_LINK);
 
   const { password } = req.body;
   // Check password format
@@ -54,7 +54,8 @@ router.put("/modify", (req, res, next) => {
   const { email } = jwt;
 
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { ...(email && { email }), ...(password && { password }) }, (err, user) => {
-    if (err || !user) return next(EXPIRED_LINK);
+    if (err) return next(EMAIL_REGISTERED_ERROR);
+    if (!user) return next(EXPIRED_LINK);
     res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
     res.json({ success: true, msg: "Account updated successfully" });
   });
