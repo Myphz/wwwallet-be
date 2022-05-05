@@ -57,7 +57,7 @@ UserSchema.index({ createdAt: 1 }, { expireAfterSeconds: USER_EXPIRE_TIME, parti
 // Middleware that gets called before a user is saved to hash the password
 UserSchema.pre("save", async function(next) {
   // Hash password only if the document is new
-  if (!this.isNew) return;
+  if (!this.isNew && !this.isModified("password")) return;
   try {
     this.password = await bcrypt.hash(this.password, SALT_ROUNDS);
     next();

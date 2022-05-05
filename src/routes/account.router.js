@@ -44,6 +44,13 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
   });
 });
 
+// Send email to modify account
+router.post("/modify", authMiddleware, (req, res, next) => {
+  const jwt = issueJWT(req.user, { modify: true }, { expiresIn: "1d" });
+  sendMail("modifyAccount", req.user.email, EMAIL.noreply, "Modify account request", { codeLink: `${BASE_URL}account/modify?jwt=${jwt}` });
+  res.json({ success: true });
+});
+
 // Error handler function
 router.use((err, req, res, next) => {
   // Set empty jwt token as cookie
