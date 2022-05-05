@@ -38,7 +38,7 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
   // Throw error if the jwt is invalid
   if (!jwt || !jwt.delete) return next(EXPIRED_LINK);
   User.deleteOne({ _id: jwt.sub, isVerified: true }, err => {
-    if (err) return next(CREDENTIALS_ERROR);
+    if (err) return next(EXPIRED_LINK);
     res.cookie("jwt", "", COOKIE_OPTS);
     res.json({ success: true });
   });
@@ -58,17 +58,11 @@ router.put("/modify", validateParams(validator, { checkAll: false }), (req, res,
   if (!jwt || !jwt.modify) return next(EXPIRED_LINK);
 
   const { email, password } = req.body;
-  if (email) req.user.email = email;
-  if (password) req.user.password = password;
 
-  req.user.save(err => {
-    if (err) {
-      console.log(err);
-      // This should never fail, so send a generic 500 response
-      return next(SERVER_ERROR);
-    };
-
-    res.json({ success: true, msg: "Account defails modified successfully" });
+  User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { ...(email && { email }), ...(password && { password }) }, (err, user) => {
+    if (err || !user) return next(EXPIRED_LINK);
+    res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+    res.json({ success: true, msg: "Account updated successfully" });
   });
 });
 

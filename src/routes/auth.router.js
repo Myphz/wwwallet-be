@@ -57,7 +57,7 @@ router.post("/register", validateParams(validator), (req, res, next) => {
 router.post("/register/verify", validateParams({ jwt: { type: String } }), (req, res, next) => {
   const jwt = decodeJWT(req.body.jwt);
   // Throw error if the jwt is invalid
-  if (!jwt) return next(CREDENTIALS_ERROR);
+  if (!jwt) return next(EXPIRED_LINK);
   // Find and update the user
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: false }, { isVerified: true }, (err, user) => {
     // If an error occured, the jwt cookie is not valid (i.e, the account has been deleted as more than 24 hours have passed or the jwt is invalid)
