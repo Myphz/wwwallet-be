@@ -7,6 +7,7 @@ export const MISSING_PARAMETERS = { message: "Missing required parameters", stat
 export const CREDENTIALS_ERROR = { message: "Invalid credentials", status: 401 }; // wrong username or password
 export const EMAIL_REGISTERED_ERROR = { message: "Email already registered", status: 409 };
 export const EXPIRED_LINK = { status: 401, message: "The link has expired" };
+export const EMAIL_NOT_FOUND = { status: 404, message: "The email is not registered" };
 
 // Binance error
 export const BINANCE_ERROR = { message: "Binance fetch error", status: 404 };

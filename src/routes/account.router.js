@@ -7,7 +7,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
-import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR } from "../config/errors.js";
+import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR, EMAIL_NOT_FOUND } from "../config/errors.js";
 
 const router = express.Router();
 
@@ -52,6 +52,21 @@ router.post("/update", authMiddleware, async (req, res, next) => {
   const modifiedField = req.body.email ? "email" : "password";
   // Send email either to the current email or to the email received as optional parameter
   sendMail("updateAccount", email, EMAIL.noreply, `Update ${modifiedField} request`, { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=${modifiedField}` });
+
+  res.json({ success: true, msg: "Check your email to continue" });
+});
+
+// Send email to reset password (forgot password)
+router.post("/forgot", validateParams({ email: { type: String, validator: validateEmail } }), async (req, res, next) => {
+  const email = req.body.email;
+  // Check if user exists
+  const user = await User.findOne({ email });
+  if (!user) return next(EMAIL_NOT_FOUND);
+  
+  // Temporary store encrypted email in JWT to retrieve it later
+  const jwt = issueJWT(user, { update: true, email: encrypt(email) }, { expiresIn: "1h" });
+  // Send email either to the current email or to the email received as optional parameter
+  sendMail("updateAccount", email, EMAIL.noreply, "Reset password request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=password` });
 
   res.json({ success: true, msg: "Check your email to continue" });
 });
