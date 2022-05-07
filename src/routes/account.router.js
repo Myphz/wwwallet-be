@@ -66,7 +66,7 @@ router.post("/forgot", validateParams({ email: { type: String, validator: valida
   // Temporary store encrypted email in JWT to retrieve it later
   const jwt = issueJWT(user, { update: true, email: encrypt(email) }, { expiresIn: "1h" });
   // Send email either to the current email or to the email received as optional parameter
-  sendMail("updateAccount", email, EMAIL.noreply, "Reset password request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=password` });
+  sendMail("resetPassword", email, EMAIL.noreply, "Reset password request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=password` });
 
   res.json({ success: true, msg: "Check your email to continue" });
 });
