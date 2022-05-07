@@ -34,11 +34,16 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
 });
 
 // Send email to update account
-router.post("/update", authMiddleware, (req, res, next) => {
+router.post("/update", authMiddleware, async (req, res, next) => {
   // Check email format
   if (typeof req.body?.email !== "undefined") {
     if (typeof req.body.email !== "string") return next(INVALID_PARAMETERS);
     if (!validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
+  };
+
+  // If the new email is already registered, send error message
+  if (req.body.email) {
+    if (await User.exists({ email: req.body.email })) return next(EMAIL_REGISTERED_ERROR);
   };
 
   const email = req.body.email || req.user.email;
