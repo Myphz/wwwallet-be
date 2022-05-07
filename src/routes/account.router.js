@@ -16,7 +16,7 @@ const router = express.Router();
 
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {
-  const jwt = issueJWT(req.user, { delete: true }, { expiresIn: "1d" });
+  const jwt = issueJWT(req.user, { delete: true }, { expiresIn: "1h" });
   sendMail("deleteAccount", req.user.email, EMAIL.noreply, "Delete account request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=delete` });
   res.json({ success: true, msg: "Check your email to continue" });
 });
@@ -43,7 +43,7 @@ router.post("/update", authMiddleware, (req, res, next) => {
 
   const email = req.body.email || req.user.email;
   // Temporary store encrypted email in JWT to retrieve it later
-  const jwt = issueJWT(req.user, { update: true, email: encrypt(email) }, { expiresIn: "1d" });
+  const jwt = issueJWT(req.user, { update: true, email: encrypt(email) }, { expiresIn: "1h" });
   const modifiedField = req.body.email ? "email" : "password";
   // Send email either to the current email or to the email received as optional parameter
   sendMail("updateAccount", email, EMAIL.noreply, `Update ${modifiedField} request`, { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=${modifiedField}` });
