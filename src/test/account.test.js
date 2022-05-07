@@ -117,6 +117,14 @@ describe("Test account management system", () => {
       await req.put("/update").send({ jwt }).expect(422);
     });
 
+    it("doesn't update the account if the parameters are in the wrong type", async () => {
+      let jwt = issueJWT(user, { update: true, email: 123 });
+      await req.put("/update").send({ jwt }).expect(422);
+
+      jwt = issueJWT(user, { email: encrypt("newmail@mail.com"), update: true });
+      await req.put("/update").send({ jwt, password: 177 }).expect(422);
+    });
+
     it("doesn't update the account if the user is not verified", async () => {
       const newEmail = "newmail@test.com";
       const newEmail2 = "newmail2@test.com";

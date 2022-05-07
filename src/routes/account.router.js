@@ -17,8 +17,8 @@ const router = express.Router();
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {
   const jwt = issueJWT(req.user, { delete: true }, { expiresIn: "1d" });
-  sendMail("deleteAccount", req.user.email, EMAIL.noreply, "Delete account request", { codeLink: `${BASE_URL}account/delete?jwt=${jwt}` });
-  res.json({ success: true });
+  sendMail("deleteAccount", req.user.email, EMAIL.noreply, "Delete account request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=delete` });
+  res.json({ success: true, msg: "Check your email to continue" });
 });
 
 // Delete account
@@ -29,20 +29,26 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
   User.deleteOne({ _id: jwt.sub, isVerified: true }, err => {
     if (err) return next(EXPIRED_LINK);
     res.cookie("jwt", "", COOKIE_OPTS);
-    res.json({ success: true });
+    res.json({ success: true, msg: "Account deleted successfully" });
   });
 });
 
 // Send email to update account
 router.post("/update", authMiddleware, (req, res, next) => {
   // Check email format
-  if (typeof req.body?.email === "string" && !validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
-  const { email } = req.body.email || req.user.email;
+  if (typeof req.body?.email !== "undefined") {
+    if (typeof req.body.email !== "string") return next(INVALID_PARAMETERS);
+    if (!validateEmail(req.body.email)) return next(INVALID_PARAMETERS);
+  };
+
+  const email = req.body.email || req.user.email;
   // Temporary store encrypted email in JWT to retrieve it later
   const jwt = issueJWT(req.user, { update: true, email: encrypt(email) }, { expiresIn: "1d" });
+  const modifiedField = req.body.email ? "email" : "password";
   // Send email either to the current email or to the email received as optional parameter
-  sendMail("updateAccount", email, EMAIL.noreply, "update account request", { codeLink: `${BASE_URL}account/update?jwt=${jwt}` });
-  res.json({ success: true });
+  sendMail("updateAccount", email, EMAIL.noreply, `Update ${modifiedField} request`, { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=${modifiedField}` });
+
+  res.json({ success: true, msg: "Check your email to continue" });
 });
 
 // Update account
@@ -50,21 +56,24 @@ router.put("/update", (req, res, next) => {
   const jwt = decodeJWT(req.body.jwt);
   if (!jwt || !jwt.update) return next(EXPIRED_LINK);
 
-  const { password } = req.body;
+  const password = req.body.password;
   // Check password format
-  if (typeof password === "string" && !validatePassword(password)) return next(INVALID_PARAMETERS);
+  if (typeof password !== "undefined") {
+    if (typeof password !== "string") return next(INVALID_PARAMETERS);
+    if (!validatePassword(password)) return next(INVALID_PARAMETERS);
+  };
 
   // Try to decrypt email
   let email;
   try { email = decrypt(jwt.email) }
   catch { return next(INVALID_PARAMETERS) };
 
-  User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { ...(email && { email }), ...(password && { password }) }, (err, user) => {
+  User.findOneAndUpdate({ _id: jwt.sub, isVerified: true }, { email, ...(password && { password }) }, (err, user) => {
     if (err) return next(EMAIL_REGISTERED_ERROR);
     if (!user) return next(EXPIRED_LINK);
     // Issue new JWT token
     res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
-    res.json({ success: true, msg: "Account updated successfully" });
+    res.json({ success: true, msg: password ? "Password updated successfully" : "Email updated successfully"  });
   });
 });
 
@@ -78,7 +87,7 @@ router.delete("/delete/transactions", authMiddleware, (req, res, next) => {
       return next(SERVER_ERROR);
     };
 
-    res.json({ success: true, msg: "All transactions deleted successfully" });
+    res.json({ success: true, msg: "Transactions deleted successfully" });
   });
 });
 
