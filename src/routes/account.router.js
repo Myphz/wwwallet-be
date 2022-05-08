@@ -1,18 +1,27 @@
 import express from "express";
 import User from "../models/user.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
+import rateLimit from "express-rate-limit";
 import { encrypt, decrypt } from "../helpers/crypto.helper.js";
 import { BASE_URL, COOKIE_OPTS, EMAIL } from "../config/config.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
-import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR, EMAIL_NOT_FOUND } from "../config/errors.js";
+import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR, EMAIL_NOT_FOUND, LIMIT_ERROR } from "../config/errors.js";
 
 const router = express.Router();
 
+const limiter1h = rateLimit({
+  windowMs: 3600000,
+  max: process.env.NODE_ENV === "test" ? 0 : 10,
+  handler: LIMIT_ERROR
+});
 // POST - Sends email
 // PUT/DELETE - Update / Delete account
+
+// Limit api calls to 10 times per hour
+router.use(limiter1h);
 
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {

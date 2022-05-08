@@ -1,10 +1,11 @@
 import express from "express";
 import User from "../models/user.js";
+import rateLimit from "express-rate-limit";
 import { issueJWT, decodeJWT } from "../helpers/jwt.helper.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { COOKIE_OPTS, BASE_URL, EMAIL } from "../config/config.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
-import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR, EXPIRED_LINK } from "../config/errors.js";
+import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR, EXPIRED_LINK, LIMIT_ERROR } from "../config/errors.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
 
@@ -22,10 +23,16 @@ const validator = {
   }
 };
 
+const limiter1h = rateLimit({
+  windowMs: 3600000,
+  max: process.env.NODE_ENV === "test" ? 0 : 5,
+  handler: LIMIT_ERROR
+});
+
 // Register endpoint
 // This method can be called with the request parameter "resend" to just resend the email, without
 // creating a new user.
-router.post("/register", validateParams(validator), (req, res, next) => {
+router.post("/register", limiter1h, validateParams(validator), (req, res, next) => {
   const { email, password, resend } = req.body;
   if (resend) {
     // Don't create a new user, just verify that the user exists, create the jwt token and send the email

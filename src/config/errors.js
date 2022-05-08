@@ -15,3 +15,6 @@ export const BINANCE_ERROR = { message: "Binance fetch error", status: 404 };
 // Transactions errors
 export const TRANSACTION_NOT_FOUND = { message: "Invalid transaction id", status: 404 };
 export const TRANSACTION_INVALID = { message: "Insufficient balance. Please update or delete other transactions.", status: 422 };
+
+// Limiter handler
+export const LIMIT_ERROR = (req, res) => res.status(429).json({ success: false, msg: "Too many requests. Please try again later" });

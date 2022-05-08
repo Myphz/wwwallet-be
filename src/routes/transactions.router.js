@@ -2,7 +2,8 @@ import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import Big from "big.js";
-import { SERVER_ERROR, TRANSACTION_NOT_FOUND, TRANSACTION_INVALID } from "../config/errors.js";
+import rateLimit from "express-rate-limit";
+import { SERVER_ERROR, TRANSACTION_NOT_FOUND, TRANSACTION_INVALID, LIMIT_ERROR } from "../config/errors.js";
 import { findTransactionByID } from "../helpers/transaction.helper.js";
 
 const router = express.Router();
@@ -36,13 +37,19 @@ const validator = {
   },
 };
 
+const limiter15m = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === "test" ? 0 : 100,
+  handler: LIMIT_ERROR
+});
+
 // Get all transactions
 router.get("/", authMiddleware, (req, res) => {
   res.json({ success: true, transactions: req.user.transactions, msg: "Transactions retrieved successfully" });
 });
 
 // Create new transaction
-router.post("/", validateParams(validator), authMiddleware, (req, res, next) => {
+router.post("/", validateParams(validator), limiter15m, authMiddleware, (req, res, next) => {
   const { crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
@@ -78,7 +85,7 @@ router.post("/", validateParams(validator), authMiddleware, (req, res, next) => 
 });
 
 // Update existing transaction
-router.put("/", validateParams({ id: { type: String }, ...validator }), authMiddleware, (req, res, next) => {
+router.put("/", validateParams({ id: { type: String }, ...validator }), limiter15m, authMiddleware, (req, res, next) => {
   const { id, crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
