@@ -111,6 +111,12 @@ router.delete("/delete/transactions", authMiddleware, (req, res, next) => {
   });
 });
 
+// Send feedback via email
+router.post("/feedback", validateParams({ msg: { type: String } }), authMiddleware, (req, res, next) => {
+  sendMail("feedback", EMAIL.contact, EMAIL.noreply, "Feedback", { msg: req.body.msg, from: req.user.email });
+  res.json({ success: true, msg: "Feedback successfully sent" });
+});
+
 // Error handler function
 router.use((err, req, res, next) => {
   res.status(err.status);
