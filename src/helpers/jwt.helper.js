@@ -8,7 +8,10 @@ export function issueJWT(user, fields, opts) {
     ...(fields || {})
   };
 
-  return jwt.sign(payload, JWT_KEY, opts || {});
+  return jwt.sign(payload, JWT_KEY, {
+    expiresIn: "14d",
+    ...(opts || {})
+  });
 }
 
 export function decodeJWT(jwtToken) {

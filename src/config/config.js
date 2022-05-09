@@ -19,7 +19,9 @@ export const EMAIL = {
 export const COOKIE_OPTS = {
   secure: true,
   httpOnly: true,
-  overwrite: true
+  overwrite: true,
+  maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+  sameSite: "Lax"
 };
 
 export const SALT_ROUNDS = 10;

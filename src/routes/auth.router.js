@@ -7,6 +7,7 @@ import { COOKIE_OPTS, BASE_URL, EMAIL } from "../config/config.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR, EXPIRED_LINK, LIMIT_ERROR } from "../config/errors.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
+import { logInfo } from "../helpers/logger.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
 
 const router = express.Router();
@@ -57,6 +58,7 @@ router.post("/register", limiter1h, validateParams(validator), (req, res, next) 
     sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}register/verify?jwt=${jwt}` });
     // Return success
     res.json({ success: true });
+    logInfo("A new user has registered!");
   });
 });
 
@@ -71,6 +73,7 @@ router.post("/register/verify", validateParams({ jwt: { type: String } }), (req,
     if (err || !user) return next(EXPIRED_LINK);
     res.cookie("jwt", req.body.jwt, COOKIE_OPTS);
     res.json({ success: true, msg: "Email successfully verified" });
+    logInfo("A new user has verified their account!");
   });
 });
 
@@ -84,6 +87,7 @@ router.post("/login", validateParams(validator, { error: CREDENTIALS_ERROR }), (
       if (!login) return next(CREDENTIALS_ERROR);
       // If the password match and the user is verified, issue the jwt token
       if (user.isVerified) res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+      console.log(res.getHeaders());
       // Return success and isVerified property
       res.json({ success: true, isVerified: user.isVerified });
     })
