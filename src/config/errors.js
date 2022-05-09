@@ -1,5 +1,4 @@
 // Generic error
-export const SERVER_ERROR = { message: "Server error", status: 500 };
 export const INVALID_PARAMETERS = { message: "Invalid parameters format", status: 422 }; // e.g, the email is not a valid email
 export const MISSING_PARAMETERS = { message: "Missing required parameters", status: 400 };
 

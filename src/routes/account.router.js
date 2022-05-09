@@ -8,7 +8,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
 import sendMail from "../helpers/sendMail.helper.js";
-import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, SERVER_ERROR, EMAIL_NOT_FOUND, LIMIT_ERROR } from "../config/errors.js";
+import { EMAIL_REGISTERED_ERROR, EXPIRED_LINK, INVALID_PARAMETERS, EMAIL_NOT_FOUND, LIMIT_ERROR } from "../config/errors.js";
 
 const router = express.Router();
 
@@ -110,12 +110,7 @@ router.put("/update", (req, res, next) => {
 router.delete("/delete/transactions", authMiddleware, (req, res, next) => {
   req.user.transactions = [];
   req.user.save(err => {
-    if (err) {
-      console.log(err);
-      // This should never fail, so send a generic 500 response
-      return next(SERVER_ERROR);
-    };
-
+    if (err) throw err;
     res.json({ success: true, msg: "Transactions deleted successfully" });
   });
 });

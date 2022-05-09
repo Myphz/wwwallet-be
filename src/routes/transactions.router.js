@@ -3,7 +3,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import Big from "big.js";
 import rateLimit from "express-rate-limit";
-import { SERVER_ERROR, TRANSACTION_NOT_FOUND, TRANSACTION_INVALID, LIMIT_ERROR } from "../config/errors.js";
+import { TRANSACTION_NOT_FOUND, TRANSACTION_INVALID, LIMIT_ERROR } from "../config/errors.js";
 import { findTransactionByID } from "../helpers/transaction.helper.js";
 
 const router = express.Router();
@@ -76,11 +76,7 @@ router.post("/", validateParams(validator), limiter15m, (req, res, next) => {
 
   req.user.transactions = transactions;
   req.user.save(err => {
-    if (err) {
-      console.log(err);
-      // This should never fail, so send a generic 500 response
-      return next(SERVER_ERROR);
-    };
+    if (err) throw err;
     // Return success and the new transaction id
     res.json({ success: true, id: req.user.transactions[crypto][transactions[crypto].length - 1]._id, msg: "Transaction added successfully" });
   });
@@ -130,12 +126,7 @@ router.put("/", validateParams({ id: { type: String }, ...validator }), limiter1
 
   req.user.transactions = transactions;
   req.user.save(err => {
-    if (err) {
-      console.log(err);
-      // This should never fail, so send a generic 500 response
-      return next(SERVER_ERROR);
-    };
-
+    if (err) throw err;
     res.json({ success: true, newId: req.user.transactions[crypto][i]._id, msg: "Transaction updated successfully" });
   });
 });
@@ -164,12 +155,7 @@ router.delete("/", validateParams({ id: { type: String } }), (req, res, next) =>
 
   req.user.transactions = transactions;
   req.user.save(err => {
-    if (err) {
-      console.log(err);
-      // This should never fail, so send a generic 500 response
-      return next(SERVER_ERROR);
-    };
-
+    if (err) throw err;
     res.json({ success: true, msg: "Transaction deleted successfully" });
   });
 });
