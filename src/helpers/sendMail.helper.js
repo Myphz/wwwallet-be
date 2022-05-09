@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer"
 import { promises as fs } from "fs";
 import { EMAIL, EMAIL_SETTINGS, TEMPLATES_PATH } from "../config/config.js";
+import { logError } from "./logger.helper.js";
 
 export default async function sendEmail(template, to, from, subject, params) {
   const transport = nodemailer.createTransport(EMAIL_SETTINGS);
@@ -24,7 +25,7 @@ export default async function sendEmail(template, to, from, subject, params) {
   } catch (err) {
     // Ignore errors if testing
     if (process.env.NODE_ENV === "test") return;
-    console.log(err);
+    logError(err);
   }
 };
 

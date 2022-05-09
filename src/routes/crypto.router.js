@@ -44,11 +44,7 @@ router.get("/info", async (req, res, next) => {
   };
 
   // Cache file
-  try {
-    fs.writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret));
-  } catch(e) {
-    console.log(e);
-  }
+  fs.writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret));
 
   res.json(ret);
 });

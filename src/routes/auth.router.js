@@ -87,7 +87,6 @@ router.post("/login", validateParams(validator, { error: CREDENTIALS_ERROR }), (
       if (!login) return next(CREDENTIALS_ERROR);
       // If the password match and the user is verified, issue the jwt token
       if (user.isVerified) res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
-      console.log(res.getHeaders());
       // Return success and isVerified property
       res.json({ success: true, isVerified: user.isVerified });
     })
