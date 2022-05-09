@@ -1,7 +1,7 @@
 import app from "../config/app.js";
 import request from "supertest";
 import mongoose from "mongoose";
-import accountRouter from "../routes/account.router.js";
+import accountRouter from "../routers/account.router.js";
 import User from "../models/user";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { issueJWT } from "../helpers/jwt.helper.js";

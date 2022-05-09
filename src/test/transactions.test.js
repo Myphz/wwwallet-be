@@ -2,7 +2,7 @@ import app from "../config/app.js";
 import request from "supertest";
 import mongoose from "mongoose";
 import User from "../models/user";
-import transactionsRouter from "../routes/transactions.router.js";
+import transactionsRouter from "../routers/transactions.router.js";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { issueJWT } from "../helpers/jwt.helper.js";
 

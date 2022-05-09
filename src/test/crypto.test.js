@@ -1,6 +1,6 @@
 import app from "../config/app.js";
 import request from "supertest";
-import cryptoRouter from "../routes/crypto.router.js";
+import cryptoRouter from "../routers/crypto.router.js";
 import { CRYTPO_INFO_FILE } from "../config/config.js";
 import { promises as fs } from "fs";
 import { jest } from "@jest/globals";

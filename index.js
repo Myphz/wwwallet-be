@@ -1,15 +1,21 @@
 import app from "./src/config/app.js";
 import { PORT } from "./src/config/config.js";
-import authRouter from "./src/routes/auth.router.js";
-import cryptoRouter from "./src/routes/crypto.router.js";
-import transactionsRouter from "./src/routes/transactions.router.js";
-import accountRouter from "./src/routes/account.router.js";
+import apiRouter from "./src/routers/api.router.js";
 import { logError } from "./src/helpers/logger.helper.js";
+import history from "connect-history-api-fallback";
 
-app.use("/api/auth", authRouter);
-app.use("/api/crypto", cryptoRouter);
-app.use("/api/transactions", transactionsRouter);
-app.use("/api/account", accountRouter);
+const staticMiddleware = express.static("dist");
+
+app.use(staticMiddleware);
+
+// Support history api
+// this is the HTTP request path not the path on disk
+app.use(history({ index: "/index.html" }));
+
+// 2nd call for redirected requests
+app.use(staticMiddleware);
+
+app.use("/api", apiRouter);
 
 app.use((err, req, res, next) => {
   const isExpected = !!err.status;
