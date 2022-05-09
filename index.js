@@ -8,6 +8,11 @@ import accountRouter from "./src/routes/account.router.js";
 app.use("/api/auth", authRouter);
 app.use("/api/crypto", cryptoRouter);
 app.use("/api/transactions", transactionsRouter);
-app.use("/api/account", accountRouter)
+app.use("/api/account", accountRouter);
+
+app.use((err, req, res, next) => {
+  res.status(err.status);
+	res.json({ success: false, msg: err.message });
+});
 
 app.listen(PORT);

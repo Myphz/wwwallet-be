@@ -43,13 +43,15 @@ const limiter15m = rateLimit({
   handler: LIMIT_ERROR
 });
 
+router.use(authMiddleware);
+
 // Get all transactions
-router.get("/", authMiddleware, (req, res) => {
+router.get("/", (req, res) => {
   res.json({ success: true, transactions: req.user.transactions, msg: "Transactions retrieved successfully" });
 });
 
 // Create new transaction
-router.post("/", validateParams(validator), limiter15m, authMiddleware, (req, res, next) => {
+router.post("/", validateParams(validator), limiter15m, (req, res, next) => {
   const { crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
@@ -85,7 +87,7 @@ router.post("/", validateParams(validator), limiter15m, authMiddleware, (req, re
 });
 
 // Update existing transaction
-router.put("/", validateParams({ id: { type: String }, ...validator }), limiter15m, authMiddleware, (req, res, next) => {
+router.put("/", validateParams({ id: { type: String }, ...validator }), limiter15m, (req, res, next) => {
   const { id, crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
@@ -139,7 +141,7 @@ router.put("/", validateParams({ id: { type: String }, ...validator }), limiter1
 });
 
 // Delete transaction
-router.delete("/", validateParams({ id: { type: String } }), authMiddleware, (req, res, next) => {
+router.delete("/", validateParams({ id: { type: String } }), (req, res, next) => {
   const { id } = req.body;
   const transactions = req.user.transactions;
 
@@ -170,12 +172,6 @@ router.delete("/", validateParams({ id: { type: String } }), authMiddleware, (re
 
     res.json({ success: true, msg: "Transaction deleted successfully" });
   });
-});
-
-// Error handler function
-router.use((err, req, res, next) => {
-	res.status(err.status);
-	res.json({ success: false, msg: err.message });
 });
 
 export default router;

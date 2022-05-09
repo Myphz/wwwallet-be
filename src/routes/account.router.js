@@ -126,10 +126,4 @@ router.post("/feedback", validateParams({ msg: { type: String } }), authMiddlewa
   res.json({ success: true, msg: "Feedback successfully sent" });
 });
 
-// Error handler function
-router.use((err, req, res, next) => {
-  res.status(err.status);
-  res.json({ success: false, msg: err.message });
-});
-
 export default router;

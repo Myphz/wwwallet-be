@@ -60,27 +60,21 @@ describe("Test transactions system", () => {
     it("throws error on parameters missing or invalid values", async () => {
       // Missing 'crypto'
       let { crypto, ...testData } = transactionData;
-      let res = await req.post("/").set("Cookie", jwt).send(testData).expect(400);
-      expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
+      await req.post("/").set("Cookie", jwt).send(testData).expect(400);
       // Missing 'quantity'
       let { quantity, ...testData2 } = transactionData;
-      res = await req.post("/").set("Cookie", jwt).send(testData2).expect(400);
-      expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
+      await req.post("/").set("Cookie", jwt).send(testData2).expect(400);
       // Missing 'notes' (but still ok as it is not required)
       let { notes, ...testData3 } = transactionData;
       await req.post("/").set("Cookie", jwt).send(testData3).expect(200);
 
       // Invalid price
-      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, price: "invalid value" }).expect(422);
-      expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
-      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, price: "-98" }).expect(422);
-      expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, price: "invalid value" }).expect(422);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, price: "-98" }).expect(422);
 
       // Invalid date
-      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, date: 999999999999999 }).expect(422);
-      expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
-      res = await req.post("/").set("Cookie", jwt).send({ ...transactionData, date: -100 }).expect(422);
-      expect(res.body).toEqual(expect.objectContaining({ success: false, msg: expect.any(String) }));
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, date: 999999999999999 }).expect(422);
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, date: -100 }).expect(422);
     });
 
     it("creates and gets 2 new transactions with the same crypto", async () => {

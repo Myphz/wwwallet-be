@@ -106,8 +106,7 @@ router.get("/verify", authMiddleware, (req, res) => {
 router.use((err, req, res, next) => {
   // Set empty jwt token as cookie
   res.cookie("jwt", "", COOKIE_OPTS);
-  res.status(err.status);
-  res.json({ success: false, msg: err.message });
+  next(err);
 });
 
 export default router;

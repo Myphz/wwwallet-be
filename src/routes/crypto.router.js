@@ -53,10 +53,4 @@ router.get("/info", async (req, res, next) => {
   res.json(ret);
 });
 
-// Error handler
-router.use((err, req, res, next) => {
-	res.status(err.status);
-	res.json({ success: false, msg: err.message });
-});
-
 export default router;
