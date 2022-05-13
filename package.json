@@ -24,7 +24,8 @@
   },
   "scripts": {
     "test": "MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-5.0.3.tgz NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "build": "bash build.sh"
+    "build": "bash build.sh",
+    "start": "node index.js"
   },
   "type": "module"
 }
