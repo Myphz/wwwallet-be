@@ -23,4 +23,6 @@ jobs:
         heroku_email: ${{ secrets.HEROKU_EMAIL }}
         justlogin: true
 
-    - run: git push --force heroku main
+    - run: |
+        heroku git:remote -a wwwallet
+        git push --force heroku main
