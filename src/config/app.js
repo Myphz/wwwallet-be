@@ -8,9 +8,9 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors())
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
