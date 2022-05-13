@@ -1,4 +1,5 @@
 node_modules/
 .env
 .vscode
+dist/
 src/data/cryptoInfo.json

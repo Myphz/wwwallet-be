@@ -4,10 +4,12 @@ import { PORT } from "./src/config/config.js";
 import apiRouter from "./src/routers/api.router.js";
 import { logError } from "./src/helpers/logger.helper.js";
 import history from "connect-history-api-fallback";
+import path from "path";
+import { fileURLToPath } from "url";
 
 app.use("/api", apiRouter);
 
-const staticMiddleware = express.static("dist");
+const staticMiddleware = express.static(path.dirname(fileURLToPath(import.meta.url)) + "/dist/");
 app.use(staticMiddleware);
 // Support history api
 // this is the HTTP request path not the path on disk
