@@ -12,7 +12,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: git commit --allow-empty --allow-empty-message -m ""
+    - run: |
+        git config --global user.email "danielscanu45@outlook.it"
+        git config --global user.name "Myphz"
+        git commit --allow-empty --allow-empty-message -m ""
     - uses: akhileshns/heroku-deploy@v3.12.12
       with:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
