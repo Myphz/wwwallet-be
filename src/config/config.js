@@ -2,7 +2,7 @@
 import { config } from "dotenv";
 config();
 
-export const PORT = 3000;
+export const PORT = process.env.PORT || 3000;
 
 export const BASE_URL = process.env.BASE_URL || "http://localhost:5000/"
 export const JWT_KEY = process.env.JWT_KEY || "TEST_KEY";
