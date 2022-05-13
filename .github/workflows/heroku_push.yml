@@ -21,3 +21,6 @@ jobs:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
         heroku_app_name: "wwwallet"
         heroku_email: ${{ secrets.HEROKU_EMAIL }}
+        justlogin: true
+
+    - run: git push --force heroku main
