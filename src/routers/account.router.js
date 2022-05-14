@@ -26,7 +26,7 @@ router.use(limiter1h);
 // Send email to delete account
 router.post("/delete", authMiddleware, (req, res, next) => {
   const jwt = issueJWT(req.user, { delete: true }, { expiresIn: "1h" });
-  sendMail("deleteAccount", req.user.email, EMAIL.noreply, "Delete account request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=delete` });
+  sendMail("deleteAccount", req.user.email, EMAIL.noreply, "Delete account request", { codeLink: `${BASE_URL}/confirm?jwt=${jwt}&update=delete` });
   res.json({ success: true, msg: "Check your email to continue" });
 });
 
@@ -60,7 +60,7 @@ router.post("/update", authMiddleware, async (req, res, next) => {
   const jwt = issueJWT(req.user, { update: true, email: encrypt(email) }, { expiresIn: "1h" });
   const modifiedField = req.body.email ? "email" : "password";
   // Send email either to the current email or to the email received as optional parameter
-  sendMail("updateAccount", email, EMAIL.noreply, `Update ${modifiedField} request`, { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=${modifiedField}` });
+  sendMail("updateAccount", email, EMAIL.noreply, `Update ${modifiedField} request`, { codeLink: `${BASE_URL}/confirm?jwt=${jwt}&update=${modifiedField}` });
 
   res.json({ success: true, msg: "Check your email to continue" });
 });
@@ -75,7 +75,7 @@ router.post("/forgot", validateParams({ email: { type: String, validator: valida
   // Temporary store encrypted email in JWT to retrieve it later
   const jwt = issueJWT(user, { update: true, email: encrypt(email) }, { expiresIn: "1h" });
   // Send email either to the current email or to the email received as optional parameter
-  sendMail("resetPassword", email, EMAIL.noreply, "Reset password request", { codeLink: `${BASE_URL}confirm?jwt=${jwt}&update=password` });
+  sendMail("resetPassword", email, EMAIL.noreply, "Reset password request", { codeLink: `${BASE_URL}/confirm?jwt=${jwt}&update=password` });
 
   res.json({ success: true, msg: "Check your email to continue" });
 });

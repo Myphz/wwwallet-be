@@ -40,7 +40,7 @@ router.post("/register", limiter1h, validateParams(validator), (req, res, next) 
     return User.checkLogin(email, password, { isVerified: false }).then(({ login, user }) => {
       if (!login) return next(CREDENTIALS_ERROR);
       const jwt = issueJWT(user);
-      sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}?jwt=${jwt}` });
+      sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}/register/verify?jwt=${jwt}` });
       // Return success
       return res.json({ success: true, msg: "Email sent successfully" });
     })
@@ -55,7 +55,7 @@ router.post("/register", limiter1h, validateParams(validator), (req, res, next) 
     if (err) return next(EMAIL_REGISTERED_ERROR);
     // Save the jwt token and send verification email with the jwt token
     const jwt = issueJWT(user);
-    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}register/verify?jwt=${jwt}` });
+    sendMail("confirmEmail", email, EMAIL.noreply, "Confirm your email address", { codeLink: `${BASE_URL}/register/verify?jwt=${jwt}` });
     // Return success
     res.json({ success: true });
     logInfo("A new user has registered!");

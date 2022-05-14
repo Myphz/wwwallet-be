@@ -5,10 +5,10 @@ connectDB();
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
+import { BASE_URL } from "./config.js";
 
 const app = express();
-
-app.use(cors());
+app.use(cors({ origin: BASE_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
