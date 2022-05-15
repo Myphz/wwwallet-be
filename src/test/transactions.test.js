@@ -155,6 +155,13 @@ describe("Test transactions system", () => {
       // Create SELL transaction with a timestamp < the buy transaction (should fail as the balance can't be negative in the past, you can't sell more than you have)
       await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity: preciseQuantity, isBuy: false, date: 1 }).expect(422);
     });
+
+    it("throws error if the value >= 1000B", async () => {
+      const quantity = "999999999999999999999999999999999";
+      const price = "999999999999999999999999999999999"
+      // Create BUY transaction
+      await req.post("/").set("Cookie", jwt).send({ ...transactionData, quantity, price }).expect(422);
+    });
   });
 
   describe("Test update transaction endpoint", () => {
