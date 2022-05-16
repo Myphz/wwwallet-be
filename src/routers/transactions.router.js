@@ -37,9 +37,11 @@ const validator = {
   },
 };
 
-const lessThan1000Billion = (req, res, next) => {
+// Fail if the value is > 10T or < 0.00001
+const checkValue = (req, res, next) => {
   const { price, quantity } = req.body;
   if (parseFloat(price) * parseFloat(quantity) >= 1000000000000) return next(INVALID_PARAMETERS);
+  if (parseFloat(price) * parseFloat(quantity) <= 0.00001) return next(INVALID_PARAMETERS);
   next();
 }
 
@@ -57,7 +59,7 @@ router.get("/", (req, res) => {
 });
 
 // Create new transaction
-router.post("/", validateParams(validator), lessThan1000Billion, limiter15m, (req, res, next) => {
+router.post("/", validateParams(validator), checkValue, limiter15m, (req, res, next) => {
   const { crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
@@ -89,7 +91,7 @@ router.post("/", validateParams(validator), lessThan1000Billion, limiter15m, (re
 });
 
 // Update existing transaction
-router.put("/", validateParams({ id: { type: String }, ...validator }), lessThan1000Billion, limiter15m, (req, res, next) => {
+router.put("/", validateParams({ id: { type: String }, ...validator }), checkValue, limiter15m, (req, res, next) => {
   const { id, crypto, base, isBuy, price, quantity, date, notes } = req.body;
   const transactions = req.user.transactions;
 
