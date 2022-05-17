@@ -10,6 +10,7 @@
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-rate-limit": "^6.4.0",
     "jsonwebtoken": "^8.5.1",
@@ -22,8 +23,7 @@
   },
   "devDependencies": {
     "jest": "^28.1.0",
-    "supertest": "^6.2.3",
-    "dotenv": "^16.0.1"
+    "supertest": "^6.2.3"
   },
   "scripts": {
     "test": "MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-5.0.3.tgz NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
