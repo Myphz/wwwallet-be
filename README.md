@@ -38,8 +38,9 @@ With its easy and intuitive interface, it allows users by calculating and displa
 
 ## Usage
 To start using the application, you can visit the website or deploy it locally.  
-After registering and confirming your email, you can record your transactions from the wallet page or from any cryptocurrency's chart page.
-Click on the switch to choose from BUY/SELL options, select your pair and type in the crypto quantity and the price. The total value will be calculated and displayed automatically.
+After registering and confirming your email, you can record your transactions from the wallet page or from any cryptocurrency's chart page.  
+Click on the switch to choose from BUY/SELL options, select your pair and type in the crypto quantity and the price.  
+The total value will be calculated and displayed automatically.
 
 <img src="https://wwwallet.app/images/transaction.png">
 
@@ -55,7 +56,7 @@ npm start
 - Install and run the <a href="https://github.com/Myphz/wwwallet-be">frontend</a> application    
 The website will be available on `http://localhost:5000`.
 
->Optionally, you can set environment variables:
+>Optionally, you can set environment variables in a `.env` file in the project's root directory:
 > - COINMARKETCAP_API_KEY: API key for CoinMarketCap data. There already is a default one, but its rate has severe limitations.
 > - EMAIL_SETTINGS: JSON string to send emails, following the <a href="https://nodemailer.com/smtp/">Nodemailer SMTP transport</a> format. If not set, the server won't send any emails, but will print in the console the required information instead.
 > - JWT_KEY: Private key to sign JWT tokens. Defaults to "TEST_KEY"
