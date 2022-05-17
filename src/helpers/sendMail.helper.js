@@ -5,7 +5,6 @@ import { logError } from "./logger.helper.js";
 
 export default async function sendEmail(template, to, from, subject, params) {
   const transport = nodemailer.createTransport(EMAIL_SETTINGS[from] || {});
-
   const options = {
     from: `wwwallet <${from}>`,
     to,
@@ -25,6 +24,7 @@ export default async function sendEmail(template, to, from, subject, params) {
   } catch (err) {
     // Ignore errors if testing
     if (process.env.NODE_ENV === "test") return;
+    if (process.env.NODE_ENV !== "production") return console.log(params);
     logError(err);
   }
 };
