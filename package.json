@@ -10,20 +10,20 @@
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.0",
     "express": "^4.18.1",
     "express-rate-limit": "^6.4.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb-memory-server": "^8.5.2",
-    "mongoose": "^6.3.2",
+    "mongoose": "^6.3.3",
     "node-fetch": "^3.2.4",
-    "nodemailer": "^6.7.4",
-    "passport": "^0.5.2",
+    "nodemailer": "^6.7.5",
+    "passport": "^0.5.3",
     "passport-jwt": "^4.0.0"
   },
   "devDependencies": {
-    "jest": "^28.0.3",
-    "supertest": "^6.2.3"
+    "jest": "^28.1.0",
+    "supertest": "^6.2.3",
+    "dotenv": "^16.0.1"
   },
   "scripts": {
     "test": "MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-5.0.3.tgz NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
