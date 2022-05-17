@@ -3,22 +3,15 @@ import request from "supertest";
 import mongoose from "mongoose";
 import User from "../models/user";
 import transactionsRouter from "../routers/transactions.router.js";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import { issueJWT } from "../helpers/jwt.helper.js";
 
-let mongoServer;
 app.use("/", transactionsRouter);
 const req = request(app);
-
-beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  await mongoose.connect(mongoServer.getUri())
-}, 120000);
 
 afterAll(async () => {
   await User.deleteMany({});
 	await mongoose.connection.close();
-  await mongoServer.stop();
+  await global.mongoServer.stop();
 });
 
 describe("Test transactions system", () => {

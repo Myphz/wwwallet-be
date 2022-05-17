@@ -4,16 +4,9 @@ import mongoose from "mongoose";
 import authRouter from "../routers/auth.router.js";
 import User from "../models/user";
 import { issueJWT, decodeJWT } from "../helpers/jwt.helper.js";
-import { MongoMemoryServer } from "mongodb-memory-server";
 
-let mongoServer;
 app.use("/", authRouter);
 const req = request(app);
-
-beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  await mongoose.connect(mongoServer.getUri())
-}, 120000);
 
 beforeEach(async () => {
   // Delete all users
@@ -22,7 +15,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
 	await mongoose.connection.close();
-  await mongoServer.stop();
+  await global.mongoServer.stop();
 });
 
 describe("Test authentication system", () => {

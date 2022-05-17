@@ -3,23 +3,16 @@ import request from "supertest";
 import mongoose from "mongoose";
 import accountRouter from "../routers/account.router.js";
 import User from "../models/user";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import { issueJWT } from "../helpers/jwt.helper.js";
 import { encrypt } from "../helpers/crypto.helper.js";
 
-let mongoServer;
 app.use("/", accountRouter);
 const req = request(app);
 let user;
 
-beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  await mongoose.connect(mongoServer.getUri())
-}, 120000);
-
 afterAll(async () => {
 	await mongoose.connection.close();
-  await mongoServer.stop();
+  await global.mongoServer.stop();
 });
 
 describe("Test account management system", () => {

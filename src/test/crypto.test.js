@@ -1,5 +1,6 @@
 import app from "../config/app.js";
 import request from "supertest";
+import mongoose from "mongoose";
 import cryptoRouter from "../routers/crypto.router.js";
 import { CRYTPO_INFO_FILE } from "../config/config.js";
 import { promises as fs } from "fs";
@@ -7,6 +8,11 @@ import { jest } from "@jest/globals";
 
 app.use("/", cryptoRouter);
 const req = request(app);
+
+afterAll(async () => {
+	await mongoose.connection.close();
+  await global.mongoServer.stop();
+});
 
 describe("Test crypto router", () => {
   describe("Test binance middleware", () => {
