@@ -27,7 +27,7 @@ afterAll(async () => {
 
 describe("Test authentication system", () => {
   const email = "test@test.com";
-  const password = "testpassword123";
+  const password = "testpassword123A";
 
   describe("Test register endpoint", () => {
     it("registers a user", async () => {
@@ -83,7 +83,7 @@ describe("Test authentication system", () => {
 
     it("throws an error if trying to resend the email with invalid email or password", async () => {
       const fakeEmail = "fak@email.com";
-      const fakePassword = "fakepassword123";
+      const fakePassword = "fakepassword123A";
 
       await req.post("/register").send({ email, password }).expect(200);
       // Wrong email
@@ -169,7 +169,7 @@ describe("Test authentication system", () => {
 
     it("throws an error when the credentials are wrong", async () => {
       const fakeEmail = "fak@email.com";
-      const fakePassword = "fakepassword123";
+      const fakePassword = "fakepassword123A";
       // Wrong email and password
       let res = await req.post("/login").send({ email: fakeEmail, password: fakePassword });
       expect(res.status).toBe(401);
