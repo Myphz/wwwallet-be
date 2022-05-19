@@ -20,8 +20,9 @@ router.get("/binance/*", async (req, res, next) => {
 router.get("/image/:coin", async (req, res, next) => {
   const { coin } = req.params;
   // Send request and fetch image data
-  const data = await fetch(`${GATEIO_BASE_URL}${coin.toLowerCase()}.png`);
-  const image = await data.arrayBuffer();
+  const imageRequest = await fetch(`${GATEIO_BASE_URL}${coin.toLowerCase()}.png`);
+  if (!imageRequest.ok) return res.sendStatus(imageRequest.status);
+  const image = await imageRequest.arrayBuffer();
 
   // Send buffer response as png
   res.writeHead(200, {
