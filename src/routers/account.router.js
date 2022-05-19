@@ -3,7 +3,8 @@ import User from "../models/user.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import rateLimit from "express-rate-limit";
 import { encrypt, decrypt } from "../helpers/crypto.helper.js";
-import { BASE_URL, COOKIE_OPTS, EMAIL } from "../config/config.js";
+import { BASE_URL, EMAIL } from "../config/config.js";
+import setJWTCookie from "../helpers/cookie.helper.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
 import { decodeJWT, issueJWT } from "../helpers/jwt.helper.js";
@@ -37,7 +38,7 @@ router.delete("/delete", validateParams({ jwt: { type: String } }, { location: "
   if (!jwt || !jwt.delete) return next(EXPIRED_LINK);
   User.deleteOne({ _id: jwt.sub, isVerified: true }, err => {
     if (err) return next(EXPIRED_LINK);
-    res.cookie("jwt", "", COOKIE_OPTS);
+    setJWTCookie("", req, res);
     res.json({ success: true, msg: "Account deleted successfully" });
   });
 });
@@ -101,7 +102,7 @@ router.put("/update", (req, res, next) => {
     if (err) return next(EMAIL_REGISTERED_ERROR);
     if (!user) return next(EXPIRED_LINK);
     // Issue new JWT token
-    res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+    setJWTCookie(issueJWT(user), req, res);
     res.json({ success: true, msg: password ? "Password updated successfully" : "Email updated successfully"  });
   });
 });

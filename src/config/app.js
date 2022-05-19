@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { BASE_URL } from "./config.js";
 
 const app = express();
+// Always allow requests from "localhost" (android version)
 app.use(cors({ origin: [BASE_URL, "http://localhost"], credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

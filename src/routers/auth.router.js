@@ -3,7 +3,8 @@ import User from "../models/user.js";
 import rateLimit from "express-rate-limit";
 import { issueJWT, decodeJWT } from "../helpers/jwt.helper.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import { COOKIE_OPTS, BASE_URL, EMAIL } from "../config/config.js";
+import { BASE_URL, EMAIL } from "../config/config.js";
+import setJWTCookie from "../helpers/cookie.helper.js";
 import validateParams from "../middlewares/validateParams.middleware.js";
 import { CREDENTIALS_ERROR, EMAIL_REGISTERED_ERROR, EXPIRED_LINK, LIMIT_ERROR } from "../config/errors.js";
 import { validateEmail, validatePassword } from "../helpers/validateParams.helper.js";
@@ -71,7 +72,7 @@ router.post("/register/verify", validateParams({ jwt: { type: String } }), (req,
   User.findOneAndUpdate({ _id: jwt.sub, isVerified: false }, { isVerified: true }, (err, user) => {
     // If an error occured, the jwt cookie is not valid (i.e, the account has been deleted as more than 24 hours have passed or the jwt is invalid)
     if (err || !user) return next(EXPIRED_LINK);
-    res.cookie("jwt", req.body.jwt, COOKIE_OPTS);
+    setJWTCookie(req.body.jwt, req, res);
     res.json({ success: true, msg: "Email successfully verified" });
     logInfo("A new user has verified their account!");
   });
@@ -86,7 +87,7 @@ router.post("/login", validateParams(validator, { error: CREDENTIALS_ERROR }), (
     .then(({ login, user }) => {
       if (!login) return next(CREDENTIALS_ERROR);
       // If the password match and the user is verified, issue the jwt token
-      if (user.isVerified) res.cookie("jwt", issueJWT(user), COOKIE_OPTS);
+      if (user.isVerified) setJWTCookie(issueJWT(user), req, res);
       // Return success and isVerified property
       res.json({ success: true, isVerified: user.isVerified });
     })
@@ -96,7 +97,7 @@ router.post("/login", validateParams(validator, { error: CREDENTIALS_ERROR }), (
 
 // Logout the user (replace the jwt cookie and return success)
 router.delete("/login", (req, res) => {
-  res.cookie("jwt", "", COOKIE_OPTS);
+  setJWTCookie("", req, res);
   res.json({ success: true });
 });
 
@@ -108,7 +109,7 @@ router.get("/verify", authMiddleware, (req, res) => {
 // Error handler function
 router.use((err, req, res, next) => {
   // Set empty jwt token as cookie
-  res.cookie("jwt", "", COOKIE_OPTS);
+  setJWTCookie("", req, res);
   next(err);
 });
 
