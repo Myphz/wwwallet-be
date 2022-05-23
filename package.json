@@ -15,7 +15,7 @@
     "express-rate-limit": "^6.4.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb-memory-server": "^8.5.2",
-    "mongoose": "^6.3.3",
+    "mongoose": "^6.3.4",
     "node-fetch": "^3.2.4",
     "nodemailer": "^6.7.5",
     "passport": "^0.5.3",
