@@ -53,7 +53,7 @@ If you want to test the app by yourself, follow these steps:
 npm i
 npm start
 ```
-- Install and run the <a href="https://github.com/Myphz/wwwallet-be">frontend</a> application    
+- Install and run the <a href="https://github.com/Myphz/wwwallet-fe">frontend</a> application    
 The website will be available on `http://localhost:5000`.
 
 >Optionally, you can set environment variables in a `.env` file in the project's root directory:
