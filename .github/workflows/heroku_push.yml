@@ -14,16 +14,3 @@ jobs:
     - uses: actions/checkout@v3
     - run: |
         git fetch --prune --unshallow
-        git config --global user.email "danielscanu45@outlook.it"
-        git config --global user.name "Myphz"
-        git commit --allow-empty --allow-empty-message -m ""
-    - uses: akhileshns/heroku-deploy@v3.12.12
-      with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: "wwwallet"
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        justlogin: true
-
-    - run: |
-        heroku git:remote -a wwwallet
-        git push --force heroku main

@@ -1,4 +1,5 @@
 {
+  "name": "wwwallet",
   "engines": {
     "node": "16.x"
   },
