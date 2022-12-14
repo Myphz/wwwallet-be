@@ -16,6 +16,8 @@ app.use(cookieParser());
 
 // Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
 // For express-rate-limit
-app.set("trust proxy", 1);
+if (process.env.NODE_ENV !== "production") {
+  app.set("trust proxy", 2);
+}
 
 export default app;
