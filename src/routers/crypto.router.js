@@ -12,7 +12,10 @@ router.get("/binance/*", async (req, res, next) => {
   // Construct the URL with the given endpoint and params
   const data = await fetch(`${BINANCE_BASE_URL}${req.params[0]}?${new URLSearchParams(req.query)}`);
   // Return error if the endpoint hasn't been found
-  if (!data.ok) return next(BINANCE_ERROR);
+  if (!data.ok) {
+    const { message, status } = BINANCE_ERROR;
+    return next({ message: `${message}: ${await data.text()}`, status });
+  }
   res.json(await data.json());
 });
 
