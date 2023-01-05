@@ -26,7 +26,7 @@ export const COOKIE_OPTS = {
 
 export const SALT_ROUNDS = 10;
 
-export const BINANCE_BASE_URL = "https://api.binance.com/api/v3/";
+export const BINANCE_BASE_URL = "https://data.binance.com/api/v3/";
 export const COINMARKETCAP_BASE_URL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/";
 export const GATEIO_BASE_URL = "https://www.gate.io/images/coin_icon/64/";
 export const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY || "53e03511-90dc-41eb-8521-e30e6a353f7c";
