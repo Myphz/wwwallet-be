@@ -5,12 +5,12 @@ import { JWT_KEY } from "../config/config.js";
 export function issueJWT(user, fields, opts) {
   const payload = {
     sub: user._id,
-    ...(fields || {})
+    ...(fields || {}),
   };
 
   return jwt.sign(payload, JWT_KEY, {
-    expiresIn: "14d",
-    ...(opts || {})
+    expiresIn: "100d",
+    ...(opts || {}),
   });
 }
 
