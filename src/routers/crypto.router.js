@@ -2,7 +2,14 @@ import fetch from "node-fetch";
 import express from "express";
 import isFileValid from "../helpers/isFileValid.helper.js";
 import { promises as fs } from "fs";
-import { BINANCE_BASE_URL, COINMARKETCAP_BASE_URL, COINMARKETCAP_API_KEY, COINMARKETCAP_LIMIT, CRYTPO_INFO_FILE, GATEIO_BASE_URL } from "../config/config.js";
+import {
+  BINANCE_BASE_URL,
+  COINMARKETCAP_BASE_URL,
+  COINMARKETCAP_API_KEY,
+  COINMARKETCAP_LIMIT,
+  CRYTPO_INFO_FILE,
+  GATEIO_BASE_URL,
+} from "../config/config.js";
 import { BINANCE_ERROR } from "../config/errors.js";
 
 const router = express.Router();
@@ -10,7 +17,9 @@ const router = express.Router();
 // Endpoint to redirect binance API calls (as they don't work in the browser)
 router.get("/binance/*", async (req, res, next) => {
   // Construct the URL with the given endpoint and params
-  const data = await fetch(`${BINANCE_BASE_URL}${req.params[0]}?${new URLSearchParams(req.query)}`);
+  const data = await fetch(
+    `${BINANCE_BASE_URL}${req.params[0]}?${new URLSearchParams(req.query)}`
+  );
   // Return error if the endpoint hasn't been found
   if (!data.ok) {
     const { message, status } = BINANCE_ERROR;
@@ -23,7 +32,12 @@ router.get("/binance/*", async (req, res, next) => {
 router.get("/image/:coin", async (req, res, next) => {
   const { coin } = req.params;
   // Send request and fetch image data
-  const imageRequest = await fetch(`${GATEIO_BASE_URL}${coin.toLowerCase()}.png`);
+  let imageRequest;
+  try {
+    imageRequest = await fetch(`${GATEIO_BASE_URL}${coin.toLowerCase()}.png`);
+  } catch (err) {
+    return res.sendStatus(404);
+  }
   if (!imageRequest.ok) return res.sendStatus(imageRequest.status);
   const image = await imageRequest.arrayBuffer();
 
@@ -39,17 +53,22 @@ router.get("/image/:coin", async (req, res, next) => {
 // For a maximum amount of 1 day (as set in the config file).
 router.get("/info", async (req, res, next) => {
   // Check if the info have already been cached
-  if (await isFileValid()) return res.json(JSON.parse(await fs.readFile(CRYTPO_INFO_FILE)));
+  if (await isFileValid())
+    return res.json(JSON.parse(await fs.readFile(CRYTPO_INFO_FILE)));
   // Send request to coinmarketcap API
-  const response = await fetch(`${COINMARKETCAP_BASE_URL}listings/latest?limit=${COINMARKETCAP_LIMIT}`, {
-    headers: {
-      "X-CMC_PRO_API_KEY": COINMARKETCAP_API_KEY
+  const response = await fetch(
+    `${COINMARKETCAP_BASE_URL}listings/latest?limit=${COINMARKETCAP_LIMIT}`,
+    {
+      headers: {
+        "X-CMC_PRO_API_KEY": COINMARKETCAP_API_KEY,
+      },
     }
-  });
+  );
 
   const { data, status } = await response.json();
   // Return error if an error has occurred
-  if (status.error_code) return next({ status: response.status, msg: status.error_message });
+  if (status.error_code)
+    return next({ status: response.status, msg: status.error_message });
 
   const ret = {};
   for (const crypto of data) {
@@ -57,9 +76,9 @@ router.get("/info", async (req, res, next) => {
     if (symbol in ret) continue;
     ret[symbol] = {
       name,
-      mcap: crypto.quote["USD"]["market_cap"]
-    }
-  };
+      mcap: crypto.quote["USD"]["market_cap"],
+    };
+  }
 
   // Cache file
   fs.writeFile(CRYTPO_INFO_FILE, JSON.stringify(ret));
