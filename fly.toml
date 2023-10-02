@@ -1,6 +1,8 @@
 # fly.toml file generated for wwwallet on 2022-10-18T15:10:11+02:00
 
 app = "wwwallet"
+primary_region = "ams"
+
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
