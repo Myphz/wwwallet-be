@@ -26,7 +26,7 @@ export const COOKIE_OPTS = {
   secure: true,
   httpOnly: true,
   overwrite: true,
-  maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+  maxAge: 365 * 24 * 60 * 60 * 1000, // 365 days
   sameSite: "Lax",
 };
 
