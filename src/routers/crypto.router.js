@@ -8,7 +8,7 @@ import {
   COINMARKETCAP_API_KEY,
   COINMARKETCAP_LIMIT,
   CRYTPO_INFO_FILE,
-  GATEIO_BASE_URL,
+  CRYPTO_IMAGE_BASE_URL,
 } from "../config/config.js";
 import { BINANCE_ERROR } from "../config/errors.js";
 
@@ -28,22 +28,24 @@ router.get("/binance/*", async (req, res, next) => {
   res.json(await data.json());
 });
 
-// Reverse proxy endpoint to redirect gate.io image requests (to avoid ERR_CERT_COMMON_NAME_INVALID)
+// Reverse proxy endpoint to redirect crypto image requests (to avoid ERR_CERT_COMMON_NAME_INVALID)
 router.get("/image/:coin", async (req, res, next) => {
   const { coin } = req.params;
   // Send request and fetch image data
   let imageRequest;
   try {
-    imageRequest = await fetch(`${GATEIO_BASE_URL}${coin.toLowerCase()}.png`);
+    imageRequest = await fetch(
+      `${CRYPTO_IMAGE_BASE_URL}sym-${coin.toLowerCase()}_colored.svg`
+    );
   } catch (err) {
     return res.sendStatus(404);
   }
   if (!imageRequest.ok) return res.sendStatus(imageRequest.status);
   const image = await imageRequest.arrayBuffer();
 
-  // Send buffer response as png
+  // Send buffer response as svg
   res.writeHead(200, {
-    "Content-Type": "image/png",
+    "Content-Type": "image/svg+xml",
   });
   res.end(Buffer.from(image));
 });
